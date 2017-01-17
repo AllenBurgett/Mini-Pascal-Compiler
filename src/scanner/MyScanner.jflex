@@ -37,30 +37,32 @@ whitespace    = [ \r\n\t]
 /* Lexical Rules */
 
 {word}     {
-             /** Print out the word that was found. */
-             System.out.println("Found a word: " + yytext());
+             /** Build and output word Token */
+             
              if(lookUpTable.isToken(yytext())){
                 Token currentToken = lookUpTable.getToken(yytext());
-                System.out.println(currentToken.toString());
-                return yytext();
+                currentToken.setType("word");
+                return currentToken.toString();
              }else{
                 System.out.println("Word is not a Token: " + yytext());
              }
             }
             
 {number}    {
-             /** Print out the number that was found. */
-             System.out.println("Found a number: " + yytext());
-             return( yytext());
+             /** Build and output number Token */
+             
+             Token currentToken = new Token( yytext());
+             currentToken.setType("number");
+             return( currentToken.toString());
             }
             
 {syntax}    {
-             /** Print the syntax found. */
-             System.out.println("Found a syntax: " + yytext());
+             /** Build and output syntax Token */
+             
              if(lookUpTable.isToken(yytext())){
                 Token currentToken = lookUpTable.getToken(yytext());
-                System.out.println(currentToken.toString());
-                return yytext();
+                currentToken.setType("syntax");
+                return currentToken.toString();
              }else{
                 System.out.println("Syntax is not a Token: " + yytext());
              }

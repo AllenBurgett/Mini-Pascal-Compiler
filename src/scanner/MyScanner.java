@@ -563,30 +563,32 @@ class MyScanner {
             }
           case 9: break;
           case 4: 
-            { /** Print out the word that was found. */
-             System.out.println("Found a word: " + yytext());
+            { /** Build and output word Token */
+             
              if(lookUpTable.isToken(yytext())){
                 Token currentToken = lookUpTable.getToken(yytext());
-                System.out.println(currentToken.toString());
-                return yytext();
+                currentToken.setType("word");
+                return currentToken.toString();
              }else{
                 System.out.println("Word is not a Token: " + yytext());
              }
             }
           case 10: break;
           case 5: 
-            { /** Print out the number that was found. */
-             System.out.println("Found a number: " + yytext());
-             return( yytext());
+            { /** Build and output number Token */
+             
+             Token currentToken = new Token( yytext());
+             currentToken.setType("number");
+             return( currentToken.toString());
             }
           case 11: break;
           case 6: 
-            { /** Print the syntax found. */
-             System.out.println("Found a syntax: " + yytext());
+            { /** Build and output syntax Token */
+             
              if(lookUpTable.isToken(yytext())){
                 Token currentToken = lookUpTable.getToken(yytext());
-                System.out.println(currentToken.toString());
-                return yytext();
+                currentToken.setType("syntax");
+                return currentToken.toString();
              }else{
                 System.out.println("Syntax is not a Token: " + yytext());
              }
