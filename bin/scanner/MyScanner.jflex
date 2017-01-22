@@ -1,3 +1,5 @@
+package scanner;
+
 /**
  * Pascal Scanner Spec
  */
@@ -10,7 +12,7 @@
 %standalone         /* The produced java file has a main */
 %class  MyScanner   /* Names the produced java file */
 %function nextToken /* Renames the yylex() function */
-%type   String      /* Defines the return type of the scanning function */
+%type   Token      /* Defines the return type of the scanning function */
 %{
     LUT lookUpTable = new LUT();
 %}
@@ -35,40 +37,41 @@ whitespace    = [ \r\n\t]
 /* Lexical Rules */
 
 {word}     {
-             /** Print out the word that was found. */
-             System.out.println("Found a word: " + yytext());
+             /** Build and output word Token */
+             
              if(lookUpTable.isToken(yytext())){
                 Token currentToken = lookUpTable.getToken(yytext());
-                System.out.println(currentToken.toString());
-                return yytext();
+                currentToken.setType("word");
+                return currentToken;
              }else{
-                System.out.println("Word is not a Token: " + yytext());
+                Token currentToken = new Token( yytext());
+                currentToken.setType("ID");
+                return currentToken;
              }
             }
             
 {number}    {
-             /** Print out the number that was found. */
-             System.out.println("Found a number: " + yytext());
-             return( yytext());
+             /** Build and output number Token */
+             
+             Token currentToken = new Token( yytext());
+             currentToken.setType("number");
+             return currentToken;
             }
             
 {syntax}    {
-             /** Print the syntax found. */
-             System.out.println("Found a syntax: " + yytext());
-             if(lookUpTable.isToken(yytext())){
-                Token currentToken = lookUpTable.getToken(yytext());
-                System.out.println(currentToken.toString());
-                return yytext();
-             }else{
-                System.out.println("Syntax is not a Token: " + yytext());
-             }
+             /** Build and output syntax Token */
+             
+             
+                Token currentToken = new Token(";");
+                currentToken.setType("syntax");
+                return currentToken;
+             
             }
             
 {whitespace}  {  /* Ignore Whitespace */ 
-                 return "";
+            
               }
 
 {other}    { 
-             System.out.println("Illegal char: '" + yytext() + "' found.");
-             return "";
+             
            }

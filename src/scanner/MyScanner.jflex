@@ -12,7 +12,7 @@ package scanner;
 %standalone         /* The produced java file has a main */
 %class  MyScanner   /* Names the produced java file */
 %function nextToken /* Renames the yylex() function */
-%type   String      /* Defines the return type of the scanning function */
+%type   Token      /* Defines the return type of the scanning function */
 %{
     LUT lookUpTable = new LUT();
 %}
@@ -42,9 +42,11 @@ whitespace    = [ \r\n\t]
              if(lookUpTable.isToken(yytext())){
                 Token currentToken = lookUpTable.getToken(yytext());
                 currentToken.setType("word");
-                return currentToken.toString();
+                return currentToken;
              }else{
-                System.out.println("Word is not a Token: " + yytext());
+                Token currentToken = new Token( yytext());
+                currentToken.setType("ID");
+                return currentToken;
              }
             }
             
@@ -53,26 +55,23 @@ whitespace    = [ \r\n\t]
              
              Token currentToken = new Token( yytext());
              currentToken.setType("number");
-             return( currentToken.toString());
+             return currentToken;
             }
             
 {syntax}    {
              /** Build and output syntax Token */
              
-             if(lookUpTable.isToken(yytext())){
-                Token currentToken = lookUpTable.getToken(yytext());
+             
+                Token currentToken = new Token(";");
                 currentToken.setType("syntax");
-                return currentToken.toString();
-             }else{
-                System.out.println("Syntax is not a Token: " + yytext());
-             }
+                return currentToken;
+             
             }
             
 {whitespace}  {  /* Ignore Whitespace */ 
-                 return "";
+            
               }
 
 {other}    { 
-             System.out.println("Illegal char: '" + yytext() + "' found.");
-             return "";
+             
            }

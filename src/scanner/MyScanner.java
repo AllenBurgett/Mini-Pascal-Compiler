@@ -463,7 +463,7 @@ class MyScanner {
    * @return      the next token
    * @exception   java.io.IOException  if any I/O-Error occurs
    */
-  public String nextToken() throws java.io.IOException {
+  public Token nextToken() throws java.io.IOException {
     int zzInput;
     int zzAction;
 
@@ -549,13 +549,11 @@ class MyScanner {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { System.out.println("Illegal char: '" + yytext() + "' found.");
-             return "";
+            { 
             }
           case 7: break;
           case 2: 
-            { /* Ignore Whitespace */ 
-                 return "";
+            { /* Ignore Whitespace */
             }
           case 8: break;
           case 3: 
@@ -568,9 +566,11 @@ class MyScanner {
              if(lookUpTable.isToken(yytext())){
                 Token currentToken = lookUpTable.getToken(yytext());
                 currentToken.setType("word");
-                return currentToken.toString();
+                return currentToken;
              }else{
-                System.out.println("Word is not a Token: " + yytext());
+                Token currentToken = new Token( yytext());
+                currentToken.setType("ID");
+                return currentToken;
              }
             }
           case 10: break;
@@ -579,19 +579,16 @@ class MyScanner {
              
              Token currentToken = new Token( yytext());
              currentToken.setType("number");
-             return( currentToken.toString());
+             return currentToken;
             }
           case 11: break;
           case 6: 
             { /** Build and output syntax Token */
              
-             if(lookUpTable.isToken(yytext())){
-                Token currentToken = lookUpTable.getToken(yytext());
+             
+                Token currentToken = new Token(";");
                 currentToken.setType("syntax");
-                return currentToken.toString();
-             }else{
-                System.out.println("Syntax is not a Token: " + yytext());
-             }
+                return currentToken;
             }
           case 12: break;
           default:
