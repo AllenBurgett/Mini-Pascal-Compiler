@@ -20,58 +20,52 @@ package scanner;
   return null;
 %eofval}
 /* Patterns */
-
-other         = .
-letter        = [A-Za-z]
-word          = {letter}+
-digit         = [0-9]
-number        = {digit}+
-symbol        = [;,.\[\]\(\)+\-*/]
-comparator    = [<>]
-colon         = [:]
-equal         = [=]
-syntax        = {symbol}|{comparator}|{colon}|{equal}|{colon}{equal}
-whitespace    = [ \r\n\t]
+other             = .
+letter            = [A-Za-z]
+digit             = [0-9]
+whitespace        = [ \n\t\r]|(([\{])([^\{])*([\}]))
+symbol            = [;,.:\[\]()+-=<>\*/] 
+id                = ({letter}+)({letter}|{digit})*
+symbols           = {symbol}|:=|<=|>=|<>
+digits            = ({digit})({digit}*)
+optional_fraction = ([.])({digits})
+optional_exponent = ([E]([+]|[-])?{digits})
+number            = {digits}{optional_fraction}?{optional_exponent}?{optional_fraction}?
 
 %%
 /* Lexical Rules */
 
-{word}     {
+{id}     {
              /** Build and output word Token */
              
-             if(lookUpTable.isToken(yytext())){
-                Token currentToken = lookUpTable.getToken(yytext());
-                currentToken.setType("word");
-                return currentToken;
+             Keywords key = lookUpTable.get(yytext());
+             if(key != null){
+                return new Token( yytext(), key);
              }else{
-                Token currentToken = new Token( yytext());
-                currentToken.setType("ID");
-                return currentToken;
+                return new Token( yytext(), Keywords.ID);
              }
             }
             
 {number}    {
              /** Build and output number Token */
              
-             Token currentToken = new Token( yytext());
-             currentToken.setType("number");
-             return currentToken;
+             return new Token(yytext(), Keywords.NUMBER);
             }
             
-{syntax}    {
-             /** Build and output syntax Token */
+{symbols}    {
+             /** Build and output syntax Token */             
              
-             
-                Token currentToken = new Token(";");
-                currentToken.setType("syntax");
-                return currentToken;
+                Keywords key = lookUpTable.get(yytext());
+                return new Token( yytext(), key);
              
             }
             
 {whitespace}  {  /* Ignore Whitespace */ 
-            
+                if(( yytext().charAt(0) == '{') && (yytext().charAt( yytext().length() - 1) == '}')){
+                    System.out.println("Comment: " + yytext());
+                }
               }
 
 {other}    { 
-             
+             System.out.println("Invalid Symbol: " + yytext() + " found.");
            }

@@ -19,7 +19,7 @@ public class MyScannerTest {
 	
 	FileInputStream fis;
 	Reader fileReader;
-	ArrayList<String> expecteds;
+	ArrayList<Keywords> expecteds;
 
 	@Before
 	public void setUp() throws Exception {
@@ -33,65 +33,65 @@ public class MyScannerTest {
 	@Test
 	public void testNextToken() throws IOException {
 		MyScanner instance = new MyScanner(fileReader);
-		for(String expected : expecteds){
+		for(Keywords expected : expecteds){
 			System.out.println(expected);
-			String actual = instance.nextToken().getType();
+			Keywords actual = instance.nextToken().getType();
 			assertEquals(expected, actual);
 		}
 	}
 	
-	public ArrayList<String> buildTest(){
-		ArrayList<String> expecteds = new ArrayList<String>();
-		expecteds.add("word");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("word");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("word");
-		expecteds.add("syntax");
-		expecteds.add("word");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("number");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("number");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("number");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("word");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("number");
-		expecteds.add("word");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("number");
-		expecteds.add("word");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("number");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("ID");
-		expecteds.add("syntax");
-		expecteds.add("word");
-		expecteds.add("syntax");
+	public ArrayList<Keywords> buildTest(){
+		ArrayList<Keywords> expecteds = new ArrayList<Keywords>();
+		expecteds.add(Keywords.PROGRAM);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.SEMI_COLON);
+		expecteds.add(Keywords.VAR);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.COMMA);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.COMMA);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.COMMA);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.COLON);
+		expecteds.add(Keywords.INTEGER);
+		expecteds.add(Keywords.SEMI_COLON);
+		expecteds.add(Keywords.BEGIN);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.ASSIGNMENT_OPERATOR);
+		expecteds.add(Keywords.NUMBER);
+		expecteds.add(Keywords.SEMI_COLON);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.ASSIGNMENT_OPERATOR);
+		expecteds.add(Keywords.NUMBER);
+		expecteds.add(Keywords.SEMI_COLON);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.ASSIGNMENT_OPERATOR);
+		expecteds.add(Keywords.NUMBER);
+		expecteds.add(Keywords.TIMES);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.PLUS);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.SEMI_COLON);
+		expecteds.add(Keywords.IF);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.LESS_THAN);
+		expecteds.add(Keywords.NUMBER);
+		expecteds.add(Keywords.THEN);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.ASSIGNMENT_OPERATOR);
+		expecteds.add(Keywords.NUMBER);
+		expecteds.add(Keywords.ELSE);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.ASSIGNMENT_OPERATOR);
+		expecteds.add(Keywords.NUMBER);
+		expecteds.add(Keywords.SEMI_COLON);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.LEFT_PARENTHESES);
+		expecteds.add(Keywords.ID);
+		expecteds.add(Keywords.RIGHT_PARENTHESES);
+		expecteds.add(Keywords.END);
+		expecteds.add(Keywords.PERIOD);
 		
 		return expecteds;
 	}

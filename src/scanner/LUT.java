@@ -2,62 +2,47 @@ package scanner;
 
 import java.util.HashMap;
 
-@SuppressWarnings({ "rawtypes", "serial" })
-public class LUT extends HashMap{
-	
-	private HashMap<String, Token> lookup = new HashMap<String, Token>();
+public class LUT extends HashMap<String, Keywords>{
 	
 	public LUT(){
-		lookup.put("and", new Token("and"));
-		lookup.put("array", new Token("array"));
-		lookup.put("begin", new Token("begin"));
-		lookup.put("div", new Token("div"));
-		lookup.put("do", new Token("do"));
-		lookup.put("else", new Token("else"));
-		lookup.put("end", new Token("end"));
-		lookup.put("function", new Token("function"));
-		lookup.put("if", new Token("if"));
-		lookup.put("integer", new Token("integer"));
-		lookup.put("mod", new Token("mod"));
-		lookup.put("not", new Token("not"));
-		lookup.put("of", new Token("of"));
-		lookup.put("or", new Token("or"));
-		lookup.put("procedure", new Token("procedure"));
-		lookup.put("program", new Token("program"));
-		lookup.put("real", new Token("real"));
-		lookup.put("then", new Token("then"));
-		lookup.put("var", new Token("var"));
-		lookup.put("while", new Token("while"));
-		lookup.put(";", new Token(";"));
-		lookup.put(",", new Token(","));
-		lookup.put(".", new Token("."));
-		lookup.put(":", new Token(":"));
-		lookup.put("[", new Token("["));
-		lookup.put("]", new Token("]"));
-		lookup.put("(", new Token("("));
-		lookup.put(")", new Token(")"));
-		lookup.put("+", new Token("+"));
-		lookup.put("-", new Token("-"));
-		lookup.put("=", new Token("="));
-		lookup.put("<>", new Token("<>"));
-		lookup.put("<", new Token("<"));
-		lookup.put("<=", new Token("<="));
-		lookup.put(">", new Token(">"));
-		lookup.put(">=", new Token(">="));
-		lookup.put("*", new Token("*"));
-		lookup.put("/", new Token("/"));
-		lookup.put(":=", new Token(":="));
-	}
-	
-	public boolean isToken(String word){
-		if(lookup.containsKey(word)){
-			return true;
-		}else{
-			return false;
-		}
-	}
-	
-	public Token getToken(String word){
-		return lookup.get(word);
+		this.put("and",Keywords.AND);
+		this.put("array",Keywords.ARRAY);
+		this.put("begin",Keywords.BEGIN);
+		this.put("div",Keywords.DIV);
+		this.put("do",Keywords.DO);
+		this.put("else",Keywords.ELSE);
+		this.put("end",Keywords.END);
+		this.put("function",Keywords.FUNCTION);
+		this.put("if",Keywords.IF);
+		this.put("integer",Keywords.INTEGER);
+		this.put("mod",Keywords.MOD);
+		this.put("not",Keywords.NOT);
+		this.put("of",Keywords.OF);
+		this.put("or",Keywords.OR);
+		this.put("procedure",Keywords.PROCEDURE);
+		this.put("program",Keywords.PROGRAM);
+		this.put("real",Keywords.REAL);
+		this.put("then",Keywords.THEN);
+		this.put("var",Keywords.VAR);
+		this.put("while",Keywords.WHILE);
+		this.put(";",Keywords.SEMI_COLON);
+		this.put(",",Keywords.COMMA);
+		this.put(".",Keywords.PERIOD);
+		this.put(":",Keywords.COLON);
+		this.put("[",Keywords.LEFT_SQUARE_BRACKET);
+		this.put("]",Keywords.RIGHT_SQUARE_BRACKET);
+		this.put("(",Keywords.LEFT_PARENTHESES);
+		this.put(")",Keywords.RIGHT_PARENTHESES);
+		this.put("+",Keywords.PLUS);
+		this.put("-",Keywords.MINUS);
+		this.put("=",Keywords.EQUALITY_OPERATOR);
+		this.put("<>",Keywords.NOT_EQUAL);
+		this.put("<",Keywords.LESS_THAN);
+		this.put("<=",Keywords.LESS_THAN_EQUAL_TO);
+		this.put(">",Keywords.GREATER_THAN);
+		this.put(">=",Keywords.GREATER_THAN_EQUAL_TO);
+		this.put("*",Keywords.TIMES);
+		this.put("/",Keywords.DIVIDE);
+		this.put(":=",Keywords.ASSIGNMENT_OPERATOR);
 	}
 }

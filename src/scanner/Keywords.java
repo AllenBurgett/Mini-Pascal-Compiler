@@ -1,0 +1,17 @@
+package scanner;
+
+/**
+ * @author Allen Burgett
+ * 
+ * This Enum represents all the keywords and symbols from mini-pascal. 
+ * This is used for the token type.
+ */
+public enum Keywords {
+	AND, ARRAY, BEGIN, DIV, DO, ELSE, END, FUNCTION, IF,
+	INTEGER, MOD, NOT, OF, OR, PROCEDURE, PROGRAM, REAL,
+	THEN, VAR, WHILE, SEMI_COLON, COMMA, PERIOD, COLON,
+	LEFT_SQUARE_BRACKET, RIGHT_SQUARE_BRACKET, LEFT_PARENTHESES,
+	RIGHT_PARENTHESES, PLUS, MINUS, EQUALITY_OPERATOR, NOT_EQUAL,
+	LESS_THAN, LESS_THAN_EQUAL_TO, GREATER_THAN, GREATER_THAN_EQUAL_TO,
+	TIMES, DIVIDE, ASSIGNMENT_OPERATOR, ID, NUMBER
+}

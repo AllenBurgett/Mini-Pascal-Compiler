@@ -40,9 +40,10 @@ class MyScanner {
    * Translates characters to character classes
    */
   private static final String ZZ_CMAP_PACKED = 
-    "\11\0\1\1\1\1\1\2\1\2\1\1\22\0\1\1\7\0\10\5"+
-    "\12\4\1\6\1\5\1\5\1\7\1\5\2\0\32\3\1\5\1\0"+
-    "\1\5\3\0\32\3\12\0\1\2\u1fa2\0\1\2\1\2\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\udfe6\0";
+    "\11\0\1\1\1\1\1\2\1\2\1\1\22\0\1\1\7\0\3\7"+
+    "\1\16\1\7\1\16\1\14\1\7\12\4\1\10\1\7\1\12\1\11"+
+    "\1\13\2\0\4\3\1\15\25\3\1\7\1\0\1\7\3\0\32\3"+
+    "\1\5\1\0\1\6\7\0\1\2\u1fa2\0\1\2\1\2\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\uffff\0\udfe6\0";
 
   /** 
    * Translates characters to character classes
@@ -55,10 +56,11 @@ class MyScanner {
   private static final int [] ZZ_ACTION = zzUnpackAction();
 
   private static final String ZZ_ACTION_PACKED_0 =
-    "\1\0\1\1\1\2\1\3\1\4\1\5\2\6";
+    "\1\0\1\1\1\2\1\3\1\4\1\5\1\1\3\6"+
+    "\3\0\1\2\2\5\2\0\1\5";
 
   private static int [] zzUnpackAction() {
-    int [] result = new int[8];
+    int [] result = new int[19];
     int offset = 0;
     offset = zzUnpackAction(ZZ_ACTION_PACKED_0, offset, result);
     return result;
@@ -83,10 +85,12 @@ class MyScanner {
   private static final int [] ZZ_ROWMAP = zzUnpackRowMap();
 
   private static final String ZZ_ROWMAP_PACKED_0 =
-    "\0\0\0\10\0\10\0\10\0\20\0\30\0\10\0\40";
+    "\0\0\0\17\0\17\0\17\0\36\0\55\0\74\0\17"+
+    "\0\113\0\132\0\151\0\170\0\74\0\74\0\207\0\226"+
+    "\0\245\0\264\0\264";
 
   private static int [] zzUnpackRowMap() {
-    int [] result = new int[8];
+    int [] result = new int[19];
     int offset = 0;
     offset = zzUnpackRowMap(ZZ_ROWMAP_PACKED_0, offset, result);
     return result;
@@ -109,11 +113,16 @@ class MyScanner {
   private static final int [] ZZ_TRANS = zzUnpackTrans();
 
   private static final String ZZ_TRANS_PACKED_0 =
-    "\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\7"+
-    "\13\0\1\5\10\0\1\6\12\0\1\7";
+    "\1\2\1\3\1\4\1\5\1\6\1\7\1\2\1\10"+
+    "\1\11\1\10\1\12\1\11\1\10\1\5\1\10\22\0"+
+    "\2\5\10\0\1\5\5\0\1\6\7\0\1\13\1\14"+
+    "\1\0\5\15\1\0\1\16\10\15\11\0\1\10\16\0"+
+    "\1\10\1\0\1\10\7\0\1\17\16\0\1\20\11\0"+
+    "\1\21\4\0\1\17\7\0\1\22\1\14\5\0\1\20"+
+    "\7\0\1\22\6\0\1\20\16\0\1\23\12\0";
 
   private static int [] zzUnpackTrans() {
-    int [] result = new int[40];
+    int [] result = new int[195];
     int offset = 0;
     offset = zzUnpackTrans(ZZ_TRANS_PACKED_0, offset, result);
     return result;
@@ -151,10 +160,11 @@ class MyScanner {
   private static final int [] ZZ_ATTRIBUTE = zzUnpackAttribute();
 
   private static final String ZZ_ATTRIBUTE_PACKED_0 =
-    "\1\0\3\11\2\1\1\11\1\1";
+    "\1\0\3\11\3\1\1\11\2\1\3\0\3\1\2\0"+
+    "\1\1";
 
   private static int [] zzUnpackAttribute() {
-    int [] result = new int[8];
+    int [] result = new int[19];
     int offset = 0;
     offset = zzUnpackAttribute(ZZ_ATTRIBUTE_PACKED_0, offset, result);
     return result;
@@ -253,7 +263,7 @@ class MyScanner {
     char [] map = new char[0x110000];
     int i = 0;  /* index in packed string  */
     int j = 0;  /* index in unpacked array */
-    while (i < 90) {
+    while (i < 110) {
       int  count = packed.charAt(i++);
       char value = packed.charAt(i++);
       do map[j++] = value; while (--count > 0);
@@ -549,11 +559,14 @@ class MyScanner {
       else {
         switch (zzAction < 0 ? zzAction : ZZ_ACTION[zzAction]) {
           case 1: 
-            { 
+            { System.out.println("Invalid Symbol: " + yytext() + " found.");
             }
           case 7: break;
           case 2: 
-            { /* Ignore Whitespace */
+            { /* Ignore Whitespace */ 
+                if(( yytext().charAt(0) == '{') && (yytext().charAt( yytext().length() - 1) == '}')){
+                    System.out.println("Comment: " + yytext());
+                }
             }
           case 8: break;
           case 3: 
@@ -563,32 +576,25 @@ class MyScanner {
           case 4: 
             { /** Build and output word Token */
              
-             if(lookUpTable.isToken(yytext())){
-                Token currentToken = lookUpTable.getToken(yytext());
-                currentToken.setType("word");
-                return currentToken;
+             Keywords key = lookUpTable.get(yytext());
+             if(key != null){
+                return new Token( yytext(), key);
              }else{
-                Token currentToken = new Token( yytext());
-                currentToken.setType("ID");
-                return currentToken;
+                return new Token( yytext(), Keywords.ID);
              }
             }
           case 10: break;
           case 5: 
             { /** Build and output number Token */
              
-             Token currentToken = new Token( yytext());
-             currentToken.setType("number");
-             return currentToken;
+             return new Token(yytext(), Keywords.NUMBER);
             }
           case 11: break;
           case 6: 
-            { /** Build and output syntax Token */
+            { /** Build and output syntax Token */             
              
-             
-                Token currentToken = new Token(";");
-                currentToken.setType("syntax");
-                return currentToken;
+                Keywords key = lookUpTable.get(yytext());
+                return new Token( yytext(), key);
             }
           case 12: break;
           default:

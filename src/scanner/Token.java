@@ -3,18 +3,17 @@ package scanner;
 public class Token
 {
     private String contents;
-    private String type;
+    private Keywords type;
     
-    public Token( String input)
+    public Token( String input, Keywords type)
     {
         this.contents = input;
+        this.type = type;
     };
     
     public String getLexeme() { return this.contents;}
     
-    public void setType(String type) { this.type = type;}
-    
-    public String getType() { return this.type;}
+    public Keywords getType() { return this.type;}
     
     @Override
     public String toString() { return "Token: " + this.contents;}
