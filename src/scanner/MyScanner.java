@@ -15,7 +15,7 @@ package scanner;
  * <a href="http://www.jflex.de/">JFlex</a> 1.6.1
  * from the specification file <tt>MyScanner.jflex</tt>
  */
-class MyScanner {
+public class MyScanner {
 
   /** This character denotes the end of file */
   public static final int YYEOF = -1;
@@ -240,6 +240,14 @@ class MyScanner {
   private int zzFinalHighSurrogate = 0;
 
   /* user code: */
+    public String getLine(){
+        return Integer.toString(yyline);
+    }
+    
+    public String getColumn(){
+        return Integer.toString(yycolumn);
+    }
+
     LUT lookUpTable = new LUT();
 
 
@@ -248,7 +256,7 @@ class MyScanner {
    *
    * @param   in  the java.io.Reader to read input from.
    */
-  MyScanner(java.io.Reader in) {
+  public MyScanner(java.io.Reader in) {
     this.zzReader = in;
   }
 
@@ -491,6 +499,62 @@ class MyScanner {
     while (true) {
       zzMarkedPosL = zzMarkedPos;
 
+      boolean zzR = false;
+      int zzCh;
+      int zzCharCount;
+      for (zzCurrentPosL = zzStartRead  ;
+           zzCurrentPosL < zzMarkedPosL ;
+           zzCurrentPosL += zzCharCount ) {
+        zzCh = Character.codePointAt(zzBufferL, zzCurrentPosL, zzMarkedPosL);
+        zzCharCount = Character.charCount(zzCh);
+        switch (zzCh) {
+        case '\u000B':
+        case '\u000C':
+        case '\u0085':
+        case '\u2028':
+        case '\u2029':
+          yyline++;
+          yycolumn = 0;
+          zzR = false;
+          break;
+        case '\r':
+          yyline++;
+          yycolumn = 0;
+          zzR = true;
+          break;
+        case '\n':
+          if (zzR)
+            zzR = false;
+          else {
+            yyline++;
+            yycolumn = 0;
+          }
+          break;
+        default:
+          zzR = false;
+          yycolumn += zzCharCount;
+        }
+      }
+
+      if (zzR) {
+        // peek one character ahead if it is \n (if we have counted one line too much)
+        boolean zzPeek;
+        if (zzMarkedPosL < zzEndReadL)
+          zzPeek = zzBufferL[zzMarkedPosL] == '\n';
+        else if (zzAtEOF)
+          zzPeek = false;
+        else {
+          boolean eof = zzRefill();
+          zzEndReadL = zzEndRead;
+          zzMarkedPosL = zzMarkedPos;
+          zzBufferL = zzBuffer;
+          if (eof) 
+            zzPeek = false;
+          else 
+            zzPeek = zzBufferL[zzMarkedPosL] == '\n';
+        }
+        if (zzPeek) yyline--;
+      }
       zzAction = -1;
 
       zzCurrentPosL = zzCurrentPos = zzStartRead = zzMarkedPosL;

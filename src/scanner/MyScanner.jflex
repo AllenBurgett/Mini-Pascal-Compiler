@@ -10,10 +10,21 @@ package scanner;
 %%
 
 %standalone         /* The produced java file has a main */
+%public             /* Makes the produced java file public */
 %class  MyScanner   /* Names the produced java file */
 %function nextToken /* Renames the yylex() function */
-%type   Token      /* Defines the return type of the scanning function */
+%type   Token       /* Defines the return type of the scanning function */
+%line               /* Builds yyline, which points to the line the scanner is on */
+%column             /* Builds yycolumn, which points to the column that the scanner is on.*/
 %{
+    public String getLine(){
+        return Integer.toString(yyline);
+    }
+    
+    public String getColumn(){
+        return Integer.toString(yycolumn);
+    }
+
     LUT lookUpTable = new LUT();
 %}
 %eofval{
