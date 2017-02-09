@@ -76,7 +76,16 @@ public class MyParser {
     	}
     }
     
-    private void declarations() {
+    private void identifier_list() {
+		match( Keywords.ID);
+		if( lookahead.getType() == Keywords.COMMA){
+			match( Keywords.COMMA);
+			identifier_list();
+		}
+		
+	}
+
+	private void declarations() {
     	if( lookahead.getType() == Keywords.VAR){
 	    	match( Keywords.VAR);
 	    	identifier_list();
@@ -124,11 +133,65 @@ public class MyParser {
 		
 	}
 
-	private void identifier_list() {
-		match( Keywords.ID);
-		if( lookahead.getType() == Keywords.COMMA){
-			match( Keywords.COMMA);
-			identifier_list();
+	private void subprogram_declarations() {
+		if( lookahead.getType() == Keywords.FUNCTION || lookahead.getType() == Keywords.PROCEDURE){
+			subprogram_declaration();
+			if( lookahead.getType() == Keywords.SEMI_COLON){
+				match( Keywords.SEMI_COLON);		
+				subprogram_declarations();
+			}
+		}
+		else{
+			//lambda case
+		}
+		
+	}
+
+	private void subprogram_declaration() {
+		subprogram_head();
+		declarations();
+		subprogram_declarations();
+		compound_statement();
+	}
+
+	private void subprogram_head() {
+		if( lookahead.getType() == Keywords.FUNCTION){
+			match( Keywords.FUNCTION);
+			match( Keywords.ID);
+			arguments();
+			match( Keywords.COLON);
+			standard_type();
+			match( Keywords.SEMI_COLON);
+		}
+		else if( lookahead.getType() == Keywords.PROCEDURE){
+			match( Keywords.PROCEDURE);
+			match( Keywords.ID);
+			arguments();
+			match( Keywords.SEMI_COLON);
+		}
+		
+		
+	}
+
+	private void arguments() {
+		if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
+			match( Keywords.LEFT_PARENTHESES);
+			parameter_list();
+			match( Keywords.RIGHT_PARENTHESES);
+		}
+		else{
+			//lambda case
+		}
+		
+	}
+
+	private void parameter_list() {
+		identifier_list();
+		match( Keywords.SEMI_COLON);
+		type();
+		if( lookahead.getType() == Keywords.SEMI_COLON){
+			match( Keywords.SEMI_COLON);
+			parameter_list();
 		}
 		
 	}
@@ -204,6 +267,12 @@ public class MyParser {
 		
 	}
 
+	private void variable() {
+		expression();
+		match( Keywords.RIGHT_SQUARE_BRACKET);
+		
+	}
+
 	private void procedure_statement() {
 		match( Keywords.LEFT_PARENTHESES);
 		expression_list();
@@ -245,6 +314,80 @@ public class MyParser {
 		
 	}
 
+	private void simple_part() {
+		if( lookahead.getType() == Keywords.PLUS || lookahead.getType() == Keywords.MINUS){
+			addop();
+			term();
+			simple_part();
+		}
+		else{
+			//lambda option
+		}
+		
+	}
+
+	/**
+	 * Executes the rule for the term non-terminal symbol in
+	 * the expression grammar.
+	 */
+	public void term() {
+	    factor();
+	    term_prime();
+	}
+
+	/**
+	 * Executes the rule for the term&prime; non-terminal symbol in
+	 * the expression grammar.
+	 */
+	public void term_prime() {
+	    if( isMulop( lookahead) ) {
+	        mulop();
+	        factor();
+	        term_prime();
+	    }
+	    else{
+	        // lambda option
+	    }
+	}
+
+	/**
+	 * Executes the rule for the factor non-terminal symbol in
+	 * the expression grammar.
+	 */
+	public void factor() {
+	    // Executed this decision as a switch instead of an
+	    // if-else chain. Either way is acceptable.
+	    switch (lookahead.getType()) {
+	        case LEFT_PARENTHESES:
+	            match( Keywords.LEFT_PARENTHESES);
+	            exp();
+	            match( Keywords.RIGHT_PARENTHESES);
+	            break;
+	        case NUMBER:
+	            match( Keywords.NUMBER);
+	            break;
+	        case ID:
+	        	match( Keywords.ID);
+	        	if( lookahead.getType() == Keywords.LEFT_SQUARE_BRACKET){
+	        		match( Keywords.LEFT_SQUARE_BRACKET);
+	        		expression();
+	        		match( Keywords.RIGHT_SQUARE_BRACKET);
+	        	}
+	        	else if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
+	        		match( Keywords.LEFT_PARENTHESES);
+	        		expression_list();
+	        		match( Keywords.RIGHT_PARENTHESES);
+	        	}
+	        	break;
+	        case NOT:
+	        	factor();
+	        	break;
+	        default:
+	            error("Factor");
+	            break;
+	    }
+	}
+
 	private void sign() {
 		switch( lookahead.getType()){
 			case MINUS:
@@ -255,18 +398,6 @@ public class MyParser {
 				break;
 			default:
 				break;
-		}
-		
-	}
-
-	private void simple_part() {
-		if( lookahead.getType() == Keywords.PLUS || lookahead.getType() == Keywords.MINUS){
-			addop();
-			term();
-			simple_part();
-		}
-		else{
-			//lambda option
 		}
 		
 	}
@@ -317,75 +448,6 @@ public class MyParser {
 		return answer;
 	}
 
-	private void variable() {
-		expression();
-		match( Keywords.RIGHT_SQUARE_BRACKET);
-		
-	}
-
-	private void subprogram_declarations() {
-		if( lookahead.getType() == Keywords.FUNCTION || lookahead.getType() == Keywords.PROCEDURE){
-			subprogram_declaration();
-			if( lookahead.getType() == Keywords.SEMI_COLON){
-				match( Keywords.SEMI_COLON);		
-				subprogram_declarations();
-			}
-		}
-		else{
-			//lambda case
-		}
-		
-	}
-
-	private void subprogram_declaration() {
-		subprogram_head();
-		declarations();
-		subprogram_declarations();
-		compound_statement();
-	}
-
-	private void subprogram_head() {
-		if( lookahead.getType() == Keywords.FUNCTION){
-			match( Keywords.FUNCTION);
-			match( Keywords.ID);
-			arguments();
-			match( Keywords.COLON);
-			standard_type();
-			match( Keywords.SEMI_COLON);
-		}
-		else if( lookahead.getType() == Keywords.PROCEDURE){
-			match( Keywords.PROCEDURE);
-			match( Keywords.ID);
-			arguments();
-			match( Keywords.SEMI_COLON);
-		}
-		
-		
-	}
-
-	private void arguments() {
-		if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
-			match( Keywords.LEFT_PARENTHESES);
-			parameter_list();
-			match( Keywords.RIGHT_PARENTHESES);
-		}
-		else{
-			//lambda case
-		}
-		
-	}
-
-	private void parameter_list() {
-		identifier_list();
-		match( Keywords.SEMI_COLON);
-		type();
-		if( lookahead.getType() == Keywords.SEMI_COLON){
-			match( Keywords.SEMI_COLON);
-			parameter_list();
-		}
-		
-	}
-
 	/**
      * Executes the rule for the exp non-terminal symbol in
      * the expression grammar.
@@ -428,30 +490,6 @@ public class MyParser {
     }
     
     /**
-     * Executes the rule for the term non-terminal symbol in
-     * the expression grammar.
-     */
-    public void term() {
-        factor();
-        term_prime();
-    }
-    
-    /**
-     * Executes the rule for the term&prime; non-terminal symbol in
-     * the expression grammar.
-     */
-    public void term_prime() {
-        if( isMulop( lookahead) ) {
-            mulop();
-            factor();
-            term_prime();
-        }
-        else{
-            // lambda option
-        }
-    }
-    
-    /**
      * Determines whether or not the given token is
      * a mulop token.
      * @param token The token to check.
@@ -479,31 +517,6 @@ public class MyParser {
         }
         else {
             error( "Mulop");
-        }
-    }
-    
-    /**
-     * Executes the rule for the factor non-terminal symbol in
-     * the expression grammar.
-     */
-    public void factor() {
-        // Executed this decision as a switch instead of an
-        // if-else chain. Either way is acceptable.
-        switch (lookahead.getType()) {
-            case LEFT_PARENTHESES:
-                match( Keywords.LEFT_PARENTHESES);
-                exp();
-                match( Keywords.RIGHT_PARENTHESES);
-                break;
-            case NUMBER:
-                match( Keywords.NUMBER);
-                break;
-            case ID:
-            	match( Keywords.ID);
-            	break;
-            default:
-                error("Factor");
-                break;
         }
     }
     
