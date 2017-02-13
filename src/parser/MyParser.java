@@ -107,6 +107,7 @@ public class MyParser {
 			match( Keywords.NUMBER);
 			match( Keywords.COLON);
 			match( Keywords.NUMBER);
+			match( Keywords.RIGHT_SQUARE_BRACKET);
 			match( Keywords.OF);
 			standard_type();
 		}
