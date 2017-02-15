@@ -8,9 +8,14 @@ public class SymbolTable {
 	
 	public SymbolTable(){}
 	
-	public void add( String identifier, Kinds kind, String type){
-		Symbol symbol = new Symbol(identifier, kind, type);
-		identifierTable.put(identifier, symbol);
+	public boolean add( String identifier, Kinds kind, String type){
+		boolean answer = false;
+		if(! identifierTable.containsKey(identifier)){
+			Symbol symbol = new Symbol(identifier, kind, type);
+			identifierTable.put(identifier, symbol);
+			answer = true;
+		}
+		return answer;
 	}
 	
 	public boolean isVariableName( String name){

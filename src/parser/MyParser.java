@@ -61,7 +61,7 @@ public class MyParser {
     //       Methods
     ///////////////////////////////
     
-    public void program(){
+    protected void program(){
     	if( lookahead.getType() == Keywords.PROGRAM){
     		match( Keywords.PROGRAM);
     		match( Keywords.ID);
@@ -76,7 +76,7 @@ public class MyParser {
     	}
     }
     
-    private void identifier_list() {
+    protected void identifier_list() {
 		match( Keywords.ID);
 		if( lookahead.getType() == Keywords.COMMA){
 			match( Keywords.COMMA);
@@ -85,7 +85,7 @@ public class MyParser {
 		
 	}
 
-	private void declarations() {
+	protected void declarations() {
     	if( lookahead.getType() == Keywords.VAR){
 	    	match( Keywords.VAR);
 	    	identifier_list();
@@ -100,7 +100,7 @@ public class MyParser {
 		
 	}
 
-	private void type() {
+	protected void type() {
 		if( lookahead.getType() == Keywords.ARRAY){
 			match( Keywords.ARRAY);
 			match( Keywords.LEFT_SQUARE_BRACKET);
@@ -120,7 +120,7 @@ public class MyParser {
 		
 	}
 
-	private void standard_type() {
+	protected void standard_type() {
 		switch( lookahead.getType()){
 			case INTEGER:
 				match( Keywords.INTEGER);
@@ -134,7 +134,7 @@ public class MyParser {
 		
 	}
 
-	private void subprogram_declarations() {
+	protected void subprogram_declarations() {
 		if( lookahead.getType() == Keywords.FUNCTION || lookahead.getType() == Keywords.PROCEDURE){
 			subprogram_declaration();
 			if( lookahead.getType() == Keywords.SEMI_COLON){
@@ -148,14 +148,14 @@ public class MyParser {
 		
 	}
 
-	private void subprogram_declaration() {
+	protected void subprogram_declaration() {
 		subprogram_head();
 		declarations();
 		subprogram_declarations();
 		compound_statement();
 	}
 
-	private void subprogram_head() {
+	protected void subprogram_head() {
 		if( lookahead.getType() == Keywords.FUNCTION){
 			match( Keywords.FUNCTION);
 			match( Keywords.ID);
@@ -174,7 +174,7 @@ public class MyParser {
 		
 	}
 
-	private void arguments() {
+	protected void arguments() {
 		if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
 			match( Keywords.LEFT_PARENTHESES);
 			parameter_list();
@@ -186,7 +186,7 @@ public class MyParser {
 		
 	}
 
-	private void parameter_list() {
+	protected void parameter_list() {
 		identifier_list();
 		match( Keywords.SEMI_COLON);
 		type();
@@ -197,7 +197,7 @@ public class MyParser {
 		
 	}
 
-	private void compound_statement() {
+	protected void compound_statement() {
 		if( lookahead.getType() == Keywords.BEGIN){
 			match( Keywords.BEGIN);
 			optional_statements();
@@ -208,7 +208,7 @@ public class MyParser {
 		
 	}
 
-	private void optional_statements() {
+	protected void optional_statements() {
 		Keywords nextType = lookahead.getType();
 		if( nextType == Keywords.ID || nextType == Keywords.BEGIN || nextType == Keywords.IF || nextType == Keywords.WHILE){
 			statement_list();
@@ -218,7 +218,7 @@ public class MyParser {
 		}
 	}
 
-	private void statement_list() {
+	protected void statement_list() {
 		statement();
 		if( lookahead.getType() == Keywords.SEMI_COLON){
 			match( Keywords.SEMI_COLON);
@@ -227,7 +227,7 @@ public class MyParser {
 		
 	}
 
-	private void statement() {
+	protected void statement() {
 		switch ( lookahead.getType()){
 			case ID:
 				match( Keywords.ID);
@@ -268,20 +268,20 @@ public class MyParser {
 		
 	}
 
-	private void variable() {
+	protected void variable() {
 		expression();
 		match( Keywords.RIGHT_SQUARE_BRACKET);
 		
 	}
 
-	private void procedure_statement() {
+	protected void procedure_statement() {
 		match( Keywords.LEFT_PARENTHESES);
 		expression_list();
 		match( Keywords.RIGHT_PARENTHESES);
 		
 	}
 
-	private void expression_list() {
+	protected void expression_list() {
 		expression();
 		if( lookahead.getType() == Keywords.SEMI_COLON){
 			match( Keywords.SEMI_COLON);
@@ -290,7 +290,7 @@ public class MyParser {
 		
 	}
 
-	private void expression() {
+	protected void expression() {
 		simple_expression();
 		if( isRelop(lookahead)){
 			relop();
@@ -302,7 +302,7 @@ public class MyParser {
 		
 	}
 	
-	private void simple_expression() {
+	protected void simple_expression() {
 		if( isTerm(lookahead)){
 			term();
 			simple_part();
@@ -315,7 +315,7 @@ public class MyParser {
 		
 	}
 
-	private void simple_part() {
+	protected void simple_part() {
 		if( lookahead.getType() == Keywords.PLUS || lookahead.getType() == Keywords.MINUS){
 			addop();
 			term();
@@ -331,7 +331,7 @@ public class MyParser {
 	 * Executes the rule for the term non-terminal symbol in
 	 * the expression grammar.
 	 */
-	public void term() {
+	protected void term() {
 	    factor();
 	    term_prime();
 	}
@@ -340,7 +340,7 @@ public class MyParser {
 	 * Executes the rule for the term&prime; non-terminal symbol in
 	 * the expression grammar.
 	 */
-	public void term_prime() {
+	protected void term_prime() {
 	    if( isMulop( lookahead) ) {
 	        mulop();
 	        factor();
@@ -355,7 +355,7 @@ public class MyParser {
 	 * Executes the rule for the factor non-terminal symbol in
 	 * the expression grammar.
 	 */
-	public void factor() {
+	protected void factor() {
 	    // Executed this decision as a switch instead of an
 	    // if-else chain. Either way is acceptable.
 	    switch (lookahead.getType()) {
@@ -381,6 +381,7 @@ public class MyParser {
 	        	}
 	        	break;
 	        case NOT:
+	        	match( Keywords.NOT);
 	        	factor();
 	        	break;
 	        default:
@@ -389,7 +390,7 @@ public class MyParser {
 	    }
 	}
 
-	private void sign() {
+	protected void sign() {
 		switch( lookahead.getType()){
 			case MINUS:
 				match( Keywords.MINUS);
@@ -403,7 +404,7 @@ public class MyParser {
 		
 	}
 
-	private boolean isTerm( Token token) {
+	protected boolean isTerm( Token token) {
 		boolean answer = false;
 		Keywords nextType = token.getType();
 		if( nextType == Keywords.ID || nextType == Keywords.NUMBER || nextType == Keywords.NOT){
@@ -412,7 +413,7 @@ public class MyParser {
 		return answer;
 	}
 
-	private void relop() {
+	protected void relop() {
 		switch( lookahead.getType()){
 			case EQUALITY_OPERATOR:
 				match( Keywords.EQUALITY_OPERATOR);
@@ -438,7 +439,7 @@ public class MyParser {
 		
 	}
 
-	private boolean isRelop( Token token){
+	protected boolean isRelop( Token token){
 		boolean answer = false;
 		Keywords nextType = token.getType();
 		if( nextType == Keywords.EQUALITY_OPERATOR || nextType == Keywords.NOT_EQUAL || nextType == Keywords.LESS_THAN || 
@@ -453,7 +454,7 @@ public class MyParser {
      * Executes the rule for the exp non-terminal symbol in
      * the expression grammar.
      */
-    public void exp() {
+    protected void exp() {
         term();
         exp_prime();
     }
@@ -462,7 +463,7 @@ public class MyParser {
      * Executes the rule for the exp&prime; non-terminal symbol in
      * the expression grammar.
      */
-    public void exp_prime() {
+    protected void exp_prime() {
         if( lookahead.getType() == Keywords.PLUS || 
                 lookahead.getType() == Keywords.MINUS ) {
             addop();
@@ -478,7 +479,7 @@ public class MyParser {
      * Executes the rule for the addop non-terminal symbol in
      * the expression grammar.
      */
-    public void addop() {
+    protected void addop() {
         if( lookahead.getType() == Keywords.PLUS) {
             match( Keywords.PLUS);
         }
@@ -496,7 +497,7 @@ public class MyParser {
      * @param token The token to check.
      * @return true if the token is a mulop, false otherwise
      */
-    private boolean isMulop( Token token) {
+    protected boolean isMulop( Token token) {
         boolean answer = false;
         if( token.getType() == Keywords.TIMES || 
                 token.getType() == Keywords.DIVIDE ) {
@@ -509,7 +510,7 @@ public class MyParser {
      * Executes the rule for the mulop non-terminal symbol in
      * the expression grammar.
      */
-    public void mulop() {
+    protected void mulop() {
         if( lookahead.getType() == Keywords.TIMES) {
             match( Keywords.TIMES);
         }
@@ -532,7 +533,7 @@ public class MyParser {
      * type.
      * @param expected The expected token type.
      */
-    public void match( Keywords expected) {
+    protected void match( Keywords expected) {
         System.out.println("match( " + expected + ")");
         if( this.lookahead.getType() == expected) {
             try {
@@ -555,7 +556,7 @@ public class MyParser {
      * Prints an error message and then exits the program.
      * @param message The error message to print.
      */
-    public void error( String message) {
+    protected void error( String message) {
         System.out.println( "Error " + message + " at line " + 
                 this.scanner.getLine() + " column " + 
                 this.scanner.getColumn());
