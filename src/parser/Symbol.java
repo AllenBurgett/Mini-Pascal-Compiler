@@ -23,4 +23,7 @@ public class Symbol {
 		return type;
 	}
 	
+	public String toString(){
+		return identifier + " " + kind.toString() + " " + type; 
+	}
 }

@@ -5,8 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import scanner.MyScanner;
 import scanner.Token;
 import scanner.Keywords;
@@ -29,6 +29,10 @@ public class MyParser {
     private Token lookahead;
     
     private MyScanner scanner;
+    
+    public SymbolTable symbolTable = new SymbolTable();
+    
+    private boolean noError = true;
     
     ///////////////////////////////
     //       Constructors
@@ -61,7 +65,7 @@ public class MyParser {
     //       Methods
     ///////////////////////////////
     
-    protected void program(){
+    public boolean program(){
     	if( lookahead.getType() == Keywords.PROGRAM){
     		match( Keywords.PROGRAM);
     		match( Keywords.ID);
@@ -74,23 +78,40 @@ public class MyParser {
     	else{
     		error( "program");
     	}
+    	
+    	return noError;
     }
     
-    protected void identifier_list() {
+    protected ArrayList<String> identifier_list() {
+    	ArrayList<String> identifierList = new ArrayList<String>();
+    	identifierList.add( lookahead.getLexeme());
 		match( Keywords.ID);
+		
 		if( lookahead.getType() == Keywords.COMMA){
 			match( Keywords.COMMA);
-			identifier_list();
+			identifierList.addAll( identifier_list());
 		}
 		
+		return identifierList;
 	}
 
 	protected void declarations() {
     	if( lookahead.getType() == Keywords.VAR){
+    		
 	    	match( Keywords.VAR);
-	    	identifier_list();
+	    	ArrayList<String> identifierList = identifier_list();
 	    	match( Keywords.COLON);
-	    	type();
+	    	
+	    	SimpleEntry<String, Kinds> typeKind = type();
+	    	
+	    	for(String id : identifierList){
+	    		boolean success = symbolTable.add(id, typeKind.getValue(), typeKind.getKey());
+	    		
+	    		if(! success){
+	    			error( id + " already declared");
+	    		}
+	    	}
+	    	
 	    	match( Keywords.SEMI_COLON);
 	    	declarations();
     	}
@@ -100,8 +121,11 @@ public class MyParser {
 		
 	}
 
-	protected void type() {
+	protected SimpleEntry<String, Kinds> type() {
+		SimpleEntry<String, Kinds> typeKind = null;
+		
 		if( lookahead.getType() == Keywords.ARRAY){
+			
 			match( Keywords.ARRAY);
 			match( Keywords.LEFT_SQUARE_BRACKET);
 			match( Keywords.NUMBER);
@@ -109,28 +133,36 @@ public class MyParser {
 			match( Keywords.NUMBER);
 			match( Keywords.RIGHT_SQUARE_BRACKET);
 			match( Keywords.OF);
-			standard_type();
+			typeKind = new SimpleEntry<String, Kinds>(standard_type(), Kinds.ARRAY);
 		}
 		else if( lookahead.getType() == Keywords.INTEGER || lookahead.getType() == Keywords.REAL){
-			standard_type();
+			typeKind = new SimpleEntry<String, Kinds>(standard_type(), Kinds.VARIABLE);
 		}
 		else{
 			error( "Expected var type");
 		}
 		
+		return typeKind;		
 	}
 
-	protected void standard_type() {
+	protected String standard_type() {
+		String standardType = null;
+		
 		switch( lookahead.getType()){
 			case INTEGER:
+				standardType = "INTEGER";
 				match( Keywords.INTEGER);
 				break;
 			case REAL:
+				standardType = "REAL";
 				match( Keywords.REAL);
 				break;
 			default:
+				error( "Type expected");
 				break;
+				
 		}
+		return standardType;
 		
 	}
 
@@ -188,7 +220,7 @@ public class MyParser {
 
 	protected void parameter_list() {
 		identifier_list();
-		match( Keywords.SEMI_COLON);
+		match( Keywords.COLON);
 		type();
 		if( lookahead.getType() == Keywords.SEMI_COLON){
 			match( Keywords.SEMI_COLON);
@@ -230,19 +262,17 @@ public class MyParser {
 	protected void statement() {
 		switch ( lookahead.getType()){
 			case ID:
-				match( Keywords.ID);
-				if( lookahead.getType() == Keywords.LEFT_SQUARE_BRACKET){
+				String identifier = lookahead.getLexeme();
+				if( symbolTable.isArrayName( identifier) || symbolTable.isVariableName( identifier)){
 					variable();
-				}
-				else if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
-					procedure_statement();
-				}
-				else if( lookahead.getType() == Keywords.ASSIGNMENT_OPERATOR){
 					match(Keywords.ASSIGNMENT_OPERATOR);
 					expression();
+				}					
+				else if( symbolTable.isFunctionName( identifier)){
+					procedure_statement();
 				}
 				else{
-					error( "invalid statement");
+					error( identifier + " has not been declared");
 				}
 				break;
 			case IF:
@@ -261,6 +291,9 @@ public class MyParser {
 				match( Keywords.DO);
 				statement();
 				break;
+			case BEGIN:
+				compound_statement();
+				break;
 			default:
 				error( "statment expected");
 		}
@@ -269,12 +302,17 @@ public class MyParser {
 	}
 
 	protected void variable() {
-		expression();
-		match( Keywords.RIGHT_SQUARE_BRACKET);
+		match( Keywords.ID);
+		if( lookahead.getType() == Keywords.LEFT_SQUARE_BRACKET){
+			match( Keywords.LEFT_SQUARE_BRACKET);
+			expression();
+			match( Keywords.RIGHT_SQUARE_BRACKET);
+		}
 		
 	}
 
 	protected void procedure_statement() {
+		match( Keywords.ID);
 		match( Keywords.LEFT_PARENTHESES);
 		expression_list();
 		match( Keywords.RIGHT_PARENTHESES);
@@ -292,7 +330,7 @@ public class MyParser {
 
 	protected void expression() {
 		simple_expression();
-		if( isRelop(lookahead)){
+		if( isRelop( lookahead)){
 			relop();
 			simple_expression();
 		}
@@ -311,6 +349,9 @@ public class MyParser {
 			sign();
 			term();
 			simple_part();
+		}
+		else{
+			error( "expected simple expression");
 		}
 		
 	}
@@ -358,27 +399,26 @@ public class MyParser {
 	protected void factor() {
 	    // Executed this decision as a switch instead of an
 	    // if-else chain. Either way is acceptable.
-	    switch (lookahead.getType()) {
+	    switch ( lookahead.getType()) {
 	        case LEFT_PARENTHESES:
 	            match( Keywords.LEFT_PARENTHESES);
-	            exp();
+	            expression();
 	            match( Keywords.RIGHT_PARENTHESES);
 	            break;
 	        case NUMBER:
 	            match( Keywords.NUMBER);
 	            break;
 	        case ID:
-	        	match( Keywords.ID);
-	        	if( lookahead.getType() == Keywords.LEFT_SQUARE_BRACKET){
-	        		match( Keywords.LEFT_SQUARE_BRACKET);
-	        		expression();
-	        		match( Keywords.RIGHT_SQUARE_BRACKET);
-	        	}
-	        	else if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
-	        		match( Keywords.LEFT_PARENTHESES);
-	        		expression_list();
-	        		match( Keywords.RIGHT_PARENTHESES);
-	        	}
+	        	String identifier = lookahead.getLexeme();
+				if( symbolTable.isArrayName( identifier) || symbolTable.isVariableName( identifier)){
+					variable();
+				}					
+				else if( symbolTable.isFunctionName( identifier)){
+					procedure_statement();
+				}
+				else{
+					error( identifier + " has not been declared");
+				}
 	        	break;
 	        case NOT:
 	        	match( Keywords.NOT);
@@ -407,7 +447,8 @@ public class MyParser {
 	protected boolean isTerm( Token token) {
 		boolean answer = false;
 		Keywords nextType = token.getType();
-		if( nextType == Keywords.ID || nextType == Keywords.NUMBER || nextType == Keywords.NOT){
+		if( nextType == Keywords.ID || nextType == Keywords.NUMBER ||
+				nextType == Keywords.NOT || nextType == Keywords.LEFT_PARENTHESES){
 			answer = true;
 		}
 		return answer;
@@ -534,7 +575,7 @@ public class MyParser {
      * @param expected The expected token type.
      */
     protected void match( Keywords expected) {
-        System.out.println("match( " + expected + ")");
+        //System.out.println("match( " + expected + ")");
         if( this.lookahead.getType() == expected) {
             try {
                 this.lookahead = scanner.nextToken();
@@ -557,6 +598,7 @@ public class MyParser {
      * @param message The error message to print.
      */
     protected void error( String message) {
+    	noError = false;
         System.out.println( "Error " + message + " at line " + 
                 this.scanner.getLine() + " column " + 
                 this.scanner.getColumn());

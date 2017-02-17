@@ -1,12 +1,16 @@
 package parser;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class SymbolTable {
 	
 	HashMap<String, Symbol> identifierTable = new HashMap<String, Symbol>();
 	
-	public SymbolTable(){}
+	public SymbolTable(){
+		this.add("write", Kinds.FUNCTION, "VOID");
+		this.add("read", Kinds.FUNCTION, "VOID");
+	}
 	
 	public boolean add( String identifier, Kinds kind, String type){
 		boolean answer = false;
@@ -56,5 +60,9 @@ public class SymbolTable {
 			}
 		}
 		return answer;
+	}
+	
+	public Collection<Symbol> getSymbols(){
+		return identifierTable.values();
 	}
 }
