@@ -30,7 +30,7 @@ public class MyParser {
     
     private MyScanner scanner;
     
-    public SymbolTable symbolTable = new SymbolTable();
+    public SymbolTable symbolTable;
     
     private boolean noError = true;
     
@@ -58,6 +58,8 @@ public class MyParser {
         } catch (IOException ex) {
             error( "Scan error");
         }
+        
+        symbolTable = new SymbolTable();
     
     }
     
@@ -68,7 +70,15 @@ public class MyParser {
     public boolean program(){
     	if( lookahead.getType() == Keywords.PROGRAM){
     		match( Keywords.PROGRAM);
-    		match( Keywords.ID);
+    		
+    		if( lookahead.getType() == Keywords.ID){
+    			symbolTable.add(lookahead.getLexeme(), Kinds.PROGRAM, "", null, null);
+    			match( Keywords.ID);
+    		}
+    		else{
+    			error( " expected Program name");
+    		}
+    		
     		match( Keywords.SEMI_COLON);
 	    	declarations();
 	    	subprogram_declarations();
@@ -102,16 +112,8 @@ public class MyParser {
 	    	ArrayList<String> identifierList = identifier_list();
 	    	match( Keywords.COLON);
 	    	
-	    	SimpleEntry<String, Kinds> typeKind = type();
-	    	
-	    	for(String id : identifierList){
-	    		boolean success = symbolTable.add(id, typeKind.getValue(), typeKind.getKey());
-	    		
-	    		if(! success){
-	    			error( id + " already declared");
-	    		}
-	    	}
-	    	
+	    	type(identifierList);
+	    		    	
 	    	match( Keywords.SEMI_COLON);
 	    	declarations();
     	}
@@ -121,28 +123,55 @@ public class MyParser {
 		
 	}
 
-	protected SimpleEntry<String, Kinds> type() {
-		SimpleEntry<String, Kinds> typeKind = null;
+	protected void type(ArrayList<String> identifierList) {
+		Integer arrayStart = null;
+		Integer arrayEnd = null;
+		Kinds kind = null;
+		String type = null; 		
 		
 		if( lookahead.getType() == Keywords.ARRAY){
 			
 			match( Keywords.ARRAY);
 			match( Keywords.LEFT_SQUARE_BRACKET);
-			match( Keywords.NUMBER);
+			if( lookahead.getType() == Keywords.NUMBER){
+				arrayStart = Integer.parseInt( lookahead.getLexeme());
+				match( Keywords.NUMBER);
+			}
+			else{
+				error( " expected array index");
+			}
+			
 			match( Keywords.COLON);
-			match( Keywords.NUMBER);
+			
+			if( lookahead.getType() == Keywords.NUMBER){
+				arrayEnd = Integer.parseInt( lookahead.getLexeme());
+				match( Keywords.NUMBER);
+			}
+			else{
+				error( " expected array index");
+			}
+			
 			match( Keywords.RIGHT_SQUARE_BRACKET);
 			match( Keywords.OF);
-			typeKind = new SimpleEntry<String, Kinds>(standard_type(), Kinds.ARRAY);
+			kind = Kinds.ARRAY;
+			type = standard_type();
 		}
 		else if( lookahead.getType() == Keywords.INTEGER || lookahead.getType() == Keywords.REAL){
-			typeKind = new SimpleEntry<String, Kinds>(standard_type(), Kinds.VARIABLE);
+			kind = Kinds.VARIABLE;
+			type = standard_type();
 		}
 		else{
 			error( "Expected var type");
 		}
 		
-		return typeKind;		
+
+    	for(String id : identifierList){
+    		boolean success = symbolTable.add(id, kind, type, arrayStart, arrayEnd);
+    		
+    		if(! success){
+    			error( id + " already declared");
+    		}
+    	}
 	}
 
 	protected String standard_type() {
@@ -188,18 +217,27 @@ public class MyParser {
 	}
 
 	protected void subprogram_head() {
+		String identifier = null;
+		
 		if( lookahead.getType() == Keywords.FUNCTION){
 			match( Keywords.FUNCTION);
-			match( Keywords.ID);
+			if( lookahead.getType() == Keywords.ID){
+				identifier = lookahead.getLexeme();
+				match( Keywords.ID);
+			}			
 			arguments();
 			match( Keywords.COLON);
-			standard_type();
+			symbolTable.add(identifier, Kinds.FUNCTION, standard_type(), null, null);
 			match( Keywords.SEMI_COLON);
 		}
 		else if( lookahead.getType() == Keywords.PROCEDURE){
 			match( Keywords.PROCEDURE);
-			match( Keywords.ID);
+			if( lookahead.getType() == Keywords.ID){
+				identifier = lookahead.getLexeme();
+				match( Keywords.ID);
+			}
 			arguments();
+			symbolTable.add(identifier, Kinds.PROCEEDURE, null, null, null);
 			match( Keywords.SEMI_COLON);
 		}
 		
@@ -219,9 +257,9 @@ public class MyParser {
 	}
 
 	protected void parameter_list() {
-		identifier_list();
+		ArrayList<String> identifierList = identifier_list();
 		match( Keywords.COLON);
-		type();
+		type( identifierList);
 		if( lookahead.getType() == Keywords.SEMI_COLON){
 			match( Keywords.SEMI_COLON);
 			parameter_list();
@@ -575,7 +613,7 @@ public class MyParser {
      * @param expected The expected token type.
      */
     protected void match( Keywords expected) {
-        //System.out.println("match( " + expected + ")");
+        System.out.println("match( " + expected + ")");
         if( this.lookahead.getType() == expected) {
             try {
                 this.lookahead = scanner.nextToken();

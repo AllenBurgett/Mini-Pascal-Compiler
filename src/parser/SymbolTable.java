@@ -8,14 +8,14 @@ public class SymbolTable {
 	HashMap<String, Symbol> identifierTable = new HashMap<String, Symbol>();
 	
 	public SymbolTable(){
-		this.add("write", Kinds.FUNCTION, "VOID");
-		this.add("read", Kinds.FUNCTION, "VOID");
+		this.add("write", Kinds.FUNCTION, "VOID", null, null);
+		this.add("read", Kinds.FUNCTION, "VOID", null, null);
 	}
 	
-	public boolean add( String identifier, Kinds kind, String type){
+	public boolean add( String identifier, Kinds kind, String type, Integer start, Integer end){
 		boolean answer = false;
 		if(! identifierTable.containsKey(identifier)){
-			Symbol symbol = new Symbol(identifier, kind, type);
+			Symbol symbol = new Symbol(identifier, kind, type, start, end);
 			identifierTable.put(identifier, symbol);
 			answer = true;
 		}
