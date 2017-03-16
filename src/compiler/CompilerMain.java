@@ -13,6 +13,7 @@ public class CompilerMain {
 	    MyParser parser = new MyParser(newFile.toString(), true);
 		boolean isProgram = parser.program();
 		
+		/*
 		if( isProgram){
 			System.out.println("Yes");
 		}else{
@@ -22,5 +23,8 @@ public class CompilerMain {
 		for(Symbol symbol : parser.symbolTable.getSymbols()){
 			System.out.println( symbol.toString());
 		}
+		*/
+		
+		System.out.print( parser.prog.indentedToString(0));
 	}
 }
