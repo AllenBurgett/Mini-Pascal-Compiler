@@ -1,10 +1,12 @@
 package syntaxtree;
 
+import scanner.Keywords;
+
 public class ArrayNode extends VariableNode {
 	private ExpressionNode expression;
 	
-	public ArrayNode(String name){
-		super(name);
+	public ArrayNode(String name, Keywords type){
+		super(name, type);
 		this.expression = null;
 	}
 
@@ -22,7 +24,7 @@ public class ArrayNode extends VariableNode {
      */
     @Override
     public String toString() {
-        return( "VariableNode: " + super.name + "ExpressionNode: " + expression);
+        return( "VariableNode: " + super.name + " of type " + super.type.toString() +  " ExpressionNode: " + expression);
     }
     
     @Override 

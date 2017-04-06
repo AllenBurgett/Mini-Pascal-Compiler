@@ -1,7 +1,12 @@
 package scanner;
 
 import java.util.HashMap;
-
+/**
+ * 
+ * @author Allen Burgett
+ * Lookup Table for all valid token types
+ *
+ */
 public class LUT extends HashMap<String, Keywords>{
 	
 	public LUT(){

@@ -5,21 +5,24 @@
  */
 package syntaxtree;
 
+import scanner.Keywords;
+
 /**
  * Represents a value or number in an expression.
- * @author Erik Steinmetz
+ * @author Allen Burgett, based on code by Erik Steinmetz
  */
 public class ValueNode extends ExpressionNode {
     
     /** The attribute associated with this node. */
-    String attribute;
+    private String attribute;
     
     /**
      * Creates a ValueNode with the given attribute.
      * @param attr The attribute for this value node.
      */
-    public ValueNode( String attr) {
+    public ValueNode( String attr, Keywords type) {
         this.attribute = attr;
+        super.type = type;
     }
     
     /** 
@@ -40,7 +43,7 @@ public class ValueNode extends ExpressionNode {
     @Override
     public String indentedToString( int level) {
         String answer = this.indentation(level);
-        answer += "Value: " + this.attribute + "\n";
+        answer += "Value: " + this.attribute + " of type " + super.type + "\n";
         return answer;
     }
 

@@ -2,6 +2,8 @@ package syntaxtree;
 
 import java.util.ArrayList;
 
+import scanner.Keywords;
+
 /**
  * Created by Allen Burgett
  */
@@ -13,8 +15,8 @@ public class FunctionNode extends VariableNode{
      * Creates an ArrayNode and the parent variableNode with the given attribute.
      * @param attr The attribute for this value node.
      */
-    public FunctionNode( String attr) {
-        super(attr);
+    public FunctionNode( String attr, Keywords type) {
+        super(attr, type);
         expNode = null;
     }
 
@@ -22,7 +24,7 @@ public class FunctionNode extends VariableNode{
      * Returns the name of the variable of this node.
      * @return The name of this VariableNode.
      */
-    public String getName() { return( super.name);}
+    public String getName() { return( super.getName());}
     //TODO add javadoc
     public ArrayList<ExpressionNode> getExpNode(){return this.expNode;}
 
@@ -40,7 +42,7 @@ public class FunctionNode extends VariableNode{
      */
     @Override
     public String toString() {
-        return( "VariableNode: " + super.name + "ExpressionNode: " + expNode);
+        return( "VariableNode: " + super.name + " of type " + super.type.toString() +  " ExpressionNode: " + expNode);
     }
 
     @Override

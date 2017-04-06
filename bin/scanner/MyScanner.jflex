@@ -1,6 +1,7 @@
 package scanner;
 
 /**
+ *@author Allen Burgett
  * Pascal Scanner Spec
  */
 

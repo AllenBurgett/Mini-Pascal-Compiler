@@ -1,21 +1,24 @@
 
 package syntaxtree;
 
+import scanner.Keywords;
+
 /**
  * Represents a variable in the syntax tree.
- * @author Erik Steinmetz
+ * @author Allen Burgett based on code by Erik Steinmetz
  */
 public class VariableNode extends ExpressionNode {
     
     /** The name of the variable associated with this node. */
-    String name;
+    protected String name;
     
     /**
      * Creates a ValueNode with the given attribute.
      * @param attr The attribute for this value node.
      */
-    public VariableNode( String attr) {
+    public VariableNode( String attr, Keywords type) {
         this.name = attr;
+        super.type = type;
     }
     
     /** 
@@ -30,13 +33,13 @@ public class VariableNode extends ExpressionNode {
      */
     @Override
     public String toString() {
-        return( name);
+        return( name + " of type " + super.type);
     }
     
     @Override
     public String indentedToString( int level) {
         String answer = this.indentation(level);
-        answer += "Name: " + this.name + "\n";
+        answer += "Name: " + this.name + " of type " + super.type.toString() + "\n";
         return answer;
     }
 

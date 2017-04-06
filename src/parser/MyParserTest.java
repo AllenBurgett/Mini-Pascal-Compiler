@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MyParserTest {
-
+/*
 	@Test
 	public void testProgram() {
 		File currentDir = new File(System.getProperty("user.dir"));
@@ -127,5 +127,5 @@ public class MyParserTest {
 		System.out.println("Statement " + test + " Passed!");
 		
 	}
-
+*/
 }

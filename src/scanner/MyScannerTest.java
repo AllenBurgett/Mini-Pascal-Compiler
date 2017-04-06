@@ -1,6 +1,7 @@
 package scanner;
 
 import static org.junit.Assert.assertEquals;
+
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -14,6 +15,12 @@ import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
+
+/**
+ * 
+ * @author Allen Burgett
+ * A series of JUnit tests for MyScanner
+ */
 
 public class MyScannerTest {
 	

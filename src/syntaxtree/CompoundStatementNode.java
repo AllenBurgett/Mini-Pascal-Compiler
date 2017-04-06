@@ -17,6 +17,10 @@ public class CompoundStatementNode extends StatementNode {
         this.statements.add( state);
     }
     
+    public ArrayList<StatementNode> getStatements(){
+    	return this.statements;
+    }
+    
     public String indentedToString( int level) {
         String answer = this.indentation( level);
         answer += "Compound Statement\n";

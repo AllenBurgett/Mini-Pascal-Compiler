@@ -1,5 +1,9 @@
 package syntaxtree;
-
+/**
+ * 
+ * @author Allen Burgett
+ *
+ */
 public class SubProgramNode extends SyntaxTreeNode{
 	private String name;
     private DeclarationsNode variables;

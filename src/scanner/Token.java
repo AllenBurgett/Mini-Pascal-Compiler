@@ -1,5 +1,13 @@
 package scanner;
 
+/**
+ * 
+ * @author Allen Burgett
+ * Token contains the original string and type as defined
+ * by the LUT
+ *
+ */
+
 public class Token
 {
     private String contents;

@@ -6,8 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+
+import analysis.SemanticAnalyzer;
 import scanner.MyScanner;
 import scanner.Token;
 import syntaxtree.ArrayNode;
@@ -96,7 +97,7 @@ public class MyParser {
     		match( Keywords.PROGRAM);
     		
     		if( lookahead.getType() == Keywords.ID){
-    			symbolTable.add(lookahead.getLexeme(), Kinds.PROGRAM, "", null, null);
+    			symbolTable.add(lookahead.getLexeme(), Kinds.PROGRAM, null, null, null);
     			prog = new ProgramNode(lookahead.getLexeme());
     			match( Keywords.ID);
     		}
@@ -137,9 +138,8 @@ public class MyParser {
 	    	ArrayList<String> identifierList = identifier_list();
 	    	match( Keywords.COLON);
 	    	
-	    	for(String id : identifierList){ decs.addVariable(new VariableNode(id)); }
-	    	
-	    	type(identifierList);
+	    	ArrayList<VariableNode> vars = type(identifierList);
+	    	for(VariableNode var : vars){ decs.addVariable( var);}
 	    		    	
 	    	match( Keywords.SEMI_COLON);
 	    	declarations();
@@ -152,11 +152,11 @@ public class MyParser {
 		
 	}
 
-	protected void type(ArrayList<String> identifierList) {
+	protected ArrayList<VariableNode> type(ArrayList<String> identifierList) {
 		Integer arrayStart = null;
 		Integer arrayEnd = null;
 		Kinds kind = null;
-		String type = null; 		
+		Keywords varType = null; 		
 		
 		if( lookahead.getType() == Keywords.ARRAY){
 			
@@ -183,36 +183,45 @@ public class MyParser {
 			match( Keywords.RIGHT_SQUARE_BRACKET);
 			match( Keywords.OF);
 			kind = Kinds.ARRAY;
-			type = standard_type();
+			varType = standard_type();
 		}
 		else if( lookahead.getType() == Keywords.INTEGER || lookahead.getType() == Keywords.REAL){
 			kind = Kinds.VARIABLE;
-			type = standard_type();
+			varType = standard_type();
 		}
 		else{
 			error( "Expected var type");
 		}
 		
-
+		ArrayList<VariableNode> declaredVars = new ArrayList<VariableNode>();
+		
     	for(String id : identifierList){
-    		boolean success = symbolTable.add(id, kind, type, arrayStart, arrayEnd);
+    		boolean success = symbolTable.add(id, kind, varType, arrayStart, arrayEnd);
     		
-    		if(! success){
+    		if( success){
+    			if(kind.equals(Kinds.VARIABLE)){
+    				declaredVars.add(new VariableNode( id, varType));
+    			}else if(kind.equals(Kinds.ARRAY)){
+    				declaredVars.add(new ArrayNode( id, varType));
+    			}
+    		}else{
     			error( id + " already declared");
     		}
     	}
+    	
+    	return declaredVars;
 	}
 
-	protected String standard_type() {
-		String standardType = null;
+	protected Keywords standard_type() {
+		Keywords standardType = null;
 		
 		switch( lookahead.getType()){
 			case INTEGER:
-				standardType = "INTEGER";
+				standardType = Keywords.INTEGER;
 				match( Keywords.INTEGER);
 				break;
 			case REAL:
-				standardType = "REAL";
+				standardType = Keywords.REAL;
 				match( Keywords.REAL);
 				break;
 			default:
@@ -245,7 +254,7 @@ public class MyParser {
 		sub.setVariables( declarations());
 		sub.setFunctions( subprogram_declarations());
 		sub.setMain( compound_statement());
-		
+		symbolTable.popTable();
 		return sub;
 	}
 
@@ -270,7 +279,7 @@ public class MyParser {
 				match( Keywords.ID);
 			}
 			arguments();
-			symbolTable.add(sub.getName(), Kinds.PROCEEDURE, null, null, null);
+			symbolTable.add(sub.getName(), Kinds.PROCEDURE, null, null, null);
 			match( Keywords.SEMI_COLON);
 		}
 		
@@ -338,18 +347,26 @@ public class MyParser {
 	}
 
 	protected StatementNode statement() {
+		SemanticAnalyzer analyzer = null;
 		switch ( lookahead.getType()){
 			case ID:
 				String identifier = lookahead.getLexeme();
 				if( symbolTable.isArrayName( identifier) || symbolTable.isVariableName( identifier)){
 					AssignmentStatementNode node = new AssignmentStatementNode();
-					node.setLvalue( variable());
+					VariableNode var = variable();
+					node.setLvalue( var);
 					match(Keywords.ASSIGNMENT_OPERATOR);
-					node.setExpression( expression());
+					
+					analyzer = new SemanticAnalyzer( expression());
+					node.setExpression( analyzer.codeFolding());
+					
+					if( node.getLvalue().getType() != node.getExpression().getType()){
+						error( "type mismatch");
+					}
 					
 					return node;
 				}					
-				else if( symbolTable.isFunctionName( identifier)){
+				else if( symbolTable.isFunctionName( identifier) || symbolTable.isProcedureName( identifier)){
 					return procedure_statement();
 				}
 				else{
@@ -359,7 +376,8 @@ public class MyParser {
 			case IF:
 				IfStatementNode ifnode = new IfStatementNode();
 				match( Keywords.IF);
-				ifnode.setTest( expression());
+				analyzer = new SemanticAnalyzer( expression());
+				ifnode.setTest( analyzer.codeFolding());
 				match( Keywords.THEN);
 				ifnode.setThenStatement( statement());
 				if( lookahead.getType() == Keywords.ELSE){
@@ -371,7 +389,8 @@ public class MyParser {
 			case WHILE:
 				WhileStatementNode whilenode = new WhileStatementNode();
 				match( Keywords.WHILE);
-				whilenode.setTest( expression());
+				analyzer = new SemanticAnalyzer( expression());
+				whilenode.setTest( analyzer.codeFolding());
 				match( Keywords.DO);
 				whilenode.setThenStatement( statement());
 				return whilenode;
@@ -388,12 +407,12 @@ public class MyParser {
 		String id = lookahead.getLexeme();
 		match( Keywords.ID);
 		if( symbolTable.isVariableName( id)){
-			VariableNode var = new VariableNode( id);
+			VariableNode var = new VariableNode( id, symbolTable.getType(id));
 			return var;
 		}
 		else if( symbolTable.isArrayName( id)){
 			if( lookahead.getType() == Keywords.LEFT_SQUARE_BRACKET){
-				ArrayNode array = new ArrayNode( id);
+				ArrayNode array = new ArrayNode( id, symbolTable.getType( id));
 				match( Keywords.LEFT_SQUARE_BRACKET);
 				array.setExpression( expression());
 				match( Keywords.RIGHT_SQUARE_BRACKET);
@@ -410,7 +429,7 @@ public class MyParser {
 
 	protected ProcedureStatementNode procedure_statement() {
 		ProcedureStatementNode node = new ProcedureStatementNode();
-		node.setLvalue( new VariableNode( lookahead.getLexeme()));
+		node.setLvalue( new VariableNode( lookahead.getLexeme(), Keywords.PROCEDURE));
 		match( Keywords.ID);
 		match( Keywords.LEFT_PARENTHESES);
 		node.setExpressions( expression_list());
@@ -421,6 +440,7 @@ public class MyParser {
 
 	protected ArrayList<ExpressionNode> expression_list() {
 		ArrayList<ExpressionNode> expList = new ArrayList<ExpressionNode>();
+		System.out.println("hit");
 		expList.add( expression());
 		if( lookahead.getType() == Keywords.SEMI_COLON){
 			match( Keywords.SEMI_COLON);
@@ -523,7 +543,12 @@ public class MyParser {
 	            match( Keywords.RIGHT_PARENTHESES);
 	            break;
 	        case NUMBER:
-	        	exp = new ValueNode( lookahead.getLexeme());
+	        	if( lookahead.getLexeme().contains(".")){
+	        		exp = new ValueNode( lookahead.getLexeme(), Keywords.REAL);
+	        	}else{
+	        		exp = new ValueNode( lookahead.getLexeme(), Keywords.INTEGER);
+	        	}
+	        	
 	            match( Keywords.NUMBER);
 	            break;
 	        case ID: 
@@ -533,7 +558,7 @@ public class MyParser {
 					return variable();
 				}					
 				else if( symbolTable.isFunctionName( identifier)){
-					FunctionNode fnode = new FunctionNode( identifier);
+					FunctionNode fnode = new FunctionNode( identifier, Keywords.FUNCTION);
 					match( Keywords.ID);
 					match( Keywords.LEFT_PARENTHESES);
 					fnode.setExpNode( expression_list());
