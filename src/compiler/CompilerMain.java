@@ -17,32 +17,32 @@ public class CompilerMain {
 	    MyParser parser = new MyParser(newFile.toString(), true);
 		boolean isProgram = parser.program();
 		
-		if( isProgram){
-			System.out.println("Yes");
-		}else{
-			System.out.println("No");
-		}
-		
-		for(Symbol symbol : parser.symbolTable.getSymbols()){
-			System.out.println( symbol.toString());
-		}
+//		if( isProgram){
+//			System.out.println("Yes");
+//		}else{
+//			System.out.println("No");
+//		}
+//		
+//		for(Symbol symbol : parser.symbolTable.getSymbols()){
+//			System.out.println( symbol.toString());
+//		}
 		
 //		System.out.print(parser.prog.indentedToString(0));
-//		
-//		if( isProgram){
-//			CodeGenerator codeGen = new CodeGenerator( parser.prog, parser.symbolTable);
-//			boolean successfulCompile = codeGen.compile();
-//			if( successfulCompile){
-//				PrintWriter writer = new PrintWriter( parser.prog.getName() + ".asm");
-//				ArrayList<String> output = codeGen.getOutput();
-//				
-//				for(int i = 0; i < output.size(); i++){
-//					writer.print(output.get(i));
-//				}
-//				writer.close();
-//			}else{
-//				System.out.println("Compile time error.");
-//			}
-//		}
+		
+		if( isProgram){
+			CodeGenerator codeGen = new CodeGenerator( parser.prog, parser.symbolTable);
+			boolean successfulCompile = codeGen.compile();
+			if( successfulCompile){
+				PrintWriter writer = new PrintWriter( parser.prog.getName() + ".asm");
+				ArrayList<String> output = codeGen.getOutput();
+				
+				for(int i = 0; i < output.size(); i++){
+					writer.print(output.get(i));
+				}
+				writer.close();
+			}else{
+				System.out.println("Compile time error.");
+			}
+		}
 	}
 }

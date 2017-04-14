@@ -6,13 +6,16 @@ public class FunctionSymbol extends ProcedureSymbol {
 	
 	private Keywords type;
 	
-	public FunctionSymbol( String identifier, Keywords type){
+	public FunctionSymbol( String identifier){
 		super( identifier);
-		this.type = type;
 	}
 	
 	public Keywords getType(){
 		return this.type;
+	}
+	
+	public void setType( Keywords type){
+		this.type = type;
 	}
 	
 	@Override

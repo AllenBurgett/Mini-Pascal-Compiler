@@ -12,11 +12,14 @@ public class SymbolTable {
 	private Stack<StackEntry> symbolTableStack = new Stack<StackEntry>();
 	private int stackSize = 0;
 	private int varCount = 0;
+	private int argCount = 0;
 	
 	public SymbolTable(){
 		this.pushTable( "Program", identifierTable);
 		this.add("write", Kinds.PROCEDURE, null, null, null);
+		this.popTable();
 		this.add("read", Kinds.PROCEDURE, null, null, null);
+		this.popTable();
 	}
 	
 	public boolean add( String identifier, Kinds kind, Keywords type, Integer start, Integer end){
@@ -29,10 +32,18 @@ public class SymbolTable {
 					if( stackSize > 1){
 						String dataId = "" + (4 * varCount) + "($fp)";
 						currentTable.put(identifier, new VariableSymbol( identifier, dataId, type));
+						varCount++;
 					}else{
 						currentTable.put(identifier, new VariableSymbol( identifier, identifier, type));
 					}
-					varCount++;
+					break;
+				case ARGUMENT:
+					if( stackSize > 1){
+						String dataId = "" + (4 * varCount) + "($fp)";
+						currentTable.put(identifier, new ArgumentSymbol( identifier, dataId, type, argCount));
+						varCount++;
+						argCount++;
+					}
 					break;
 				case ARRAY:
 					if( stackSize > 1){
@@ -45,12 +56,16 @@ public class SymbolTable {
 				case PROCEDURE:
 					ProcedureSymbol procedure = new ProcedureSymbol( identifier);
 					currentTable.put(identifier, procedure);
-					this.pushTable( identifier, procedure.getLocalSymbolTable());					
+					this.pushTable( identifier, procedure.getLocalSymbolTable());
+					argCount = 0;
+					varCount = 0;
 					break;
 				case FUNCTION:
-					FunctionSymbol function = new FunctionSymbol( identifier, type);
+					FunctionSymbol function = new FunctionSymbol( identifier);
 					currentTable.put(identifier, function);
 					this.pushTable( identifier, function.getLocalSymbolTable());
+					argCount = 0;
+					varCount = 0;
 					break;
 				default:
 					error = true;
@@ -63,6 +78,18 @@ public class SymbolTable {
 		return answer;
 	}
 	
+	public boolean addFunctionReturn( String identifier, Keywords type){
+		boolean answer = false;
+		HashMap<String, Symbol> currentTable = symbolTableStack.peek().getTable();
+		if(! currentTable.containsKey(identifier)){
+			this.add(identifier, Kinds.VARIABLE, type, null, null);
+		}else{
+			answer = true;
+		}
+		
+		return answer;
+	}
+	
 	public int pushTable(String id, HashMap<String, Symbol> table){	
 		StackEntry entry = new StackEntry( id, table);
 		symbolTableStack.push( entry);
@@ -72,9 +99,12 @@ public class SymbolTable {
 	}
 	
 	public int popTable(){
-		StackEntry entry = symbolTableStack.pop();
-		((ProcedureSymbol)symbolTableStack.lastElement().getTable().get( entry.getIdentifier())).storeTable(entry.getTable());
-		stackSize--;
+		if( stackSize > 1){
+			StackEntry entry = symbolTableStack.pop();
+			String subId = entry.getIdentifier();
+			((ProcedureSymbol)symbolTableStack.peek().getTable().get( subId)).storeTable( entry.getTable());
+			stackSize--;
+		}
 		return stackSize;
 	}
 	
@@ -153,10 +183,16 @@ public class SymbolTable {
 	}
 	
 	public Collection<Symbol> getSymbols(){
-		return identifierTable.values();
+		return symbolTableStack.peek().getTable().values();
 	}
 	
 	public Symbol getSymbol( String id){
-		return identifierTable.get(id);
+		for( int i = stackSize - 1; i >= 0; i--){
+			HashMap<String, Symbol> currentTable = symbolTableStack.elementAt(i).getTable();
+			if( currentTable.containsKey( id)){
+				return currentTable.get( id);
+			}
+		}
+		return null;
 	}
 }

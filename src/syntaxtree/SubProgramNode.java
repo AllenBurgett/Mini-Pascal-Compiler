@@ -2,6 +2,8 @@ package syntaxtree;
 
 import java.util.ArrayList;
 
+import scanner.Keywords;
+
 /**
  * 
  * @author Allen Burgett
@@ -14,9 +16,12 @@ public class SubProgramNode extends SyntaxTreeNode{
     private DeclarationsNode variables;
     private SubProgramDeclarationsNode functions;
     private CompoundStatementNode main;
+    private Keywords subType;
+    private Keywords returnType = null;
     
-    public SubProgramNode( String aName) {
+    public SubProgramNode( String aName, Keywords subType) {
         this.name = aName;
+        this.subType = subType;
     }
     
     public void setArguments( ArrayList<VariableNode> args){
@@ -58,6 +63,18 @@ public class SubProgramNode extends SyntaxTreeNode{
 
     public void setMain(CompoundStatementNode main) {
         this.main = main;
+    }
+    
+    public void setReturnType( Keywords type){
+    	returnType = type;
+    }
+    
+    public Keywords getReturnType(){
+    	return returnType;
+    }
+    
+    public Keywords getSubType(){
+    	return subType;
     }
 	
 	@Override

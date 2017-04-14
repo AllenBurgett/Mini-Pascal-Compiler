@@ -139,7 +139,7 @@ public class MyParser {
 	    	ArrayList<String> identifierList = identifier_list();
 	    	match( Keywords.COLON);
 	    	
-	    	ArrayList<VariableNode> vars = type(identifierList);
+	    	ArrayList<VariableNode> vars = type(identifierList, false);
 	    	for(VariableNode var : vars){ decs.addVariable( var);}
 	    	
 	    	match( Keywords.SEMI_COLON);
@@ -153,7 +153,7 @@ public class MyParser {
 		
 	}
 
-	protected ArrayList<VariableNode> type(ArrayList<String> identifierList) {
+	protected ArrayList<VariableNode> type(ArrayList<String> identifierList, boolean isArgument) {
 		Integer arrayStart = null;
 		Integer arrayEnd = null;
 		Kinds kind = null;
@@ -197,7 +197,12 @@ public class MyParser {
 		ArrayList<VariableNode> declaredVars = new ArrayList<VariableNode>();
 		
     	for(String id : identifierList){
-    		boolean success = symbolTable.add(id, kind, varType, arrayStart, arrayEnd);
+    		boolean success = false;
+    		if( isArgument){
+    			success = symbolTable.add(id, Kinds.ARGUMENT, varType, arrayStart, arrayEnd);
+    		}else{
+    			success = symbolTable.add(id, kind, varType, arrayStart, arrayEnd);
+    		}
     		
     		if( success){
     			if(kind.equals(Kinds.VARIABLE)){
@@ -256,6 +261,9 @@ public class MyParser {
 		sub.setFunctions( subprogram_declarations());
 		sub.setMain( compound_statement());
 		symbolTable.popTable();
+		if( sub.getSubType() == Keywords.FUNCTION){
+			((FunctionSymbol)symbolTable.getSymbol( sub.getName())).setType(sub.getReturnType());
+		}
 		return sub;
 	}
 
@@ -266,19 +274,22 @@ public class MyParser {
 		if( lookahead.getType() == Keywords.FUNCTION){
 			match( Keywords.FUNCTION);
 			if( lookahead.getType() == Keywords.ID){
-				sub = new SubProgramNode( lookahead.getLexeme());
+				sub = new SubProgramNode( lookahead.getLexeme(), Keywords.FUNCTION);
 				match( Keywords.ID);
 			}
-			symbolTable.add(sub.getName(), Kinds.FUNCTION, standard_type(), null, null);
+			symbolTable.add(sub.getName(), Kinds.FUNCTION, null, null, null);
 			args = arguments();
 			sub.setArguments( args);
 			match( Keywords.COLON);
+			Keywords returnType = standard_type();
+			sub.setReturnType( returnType);
+			symbolTable.addFunctionReturn(sub.getName(), returnType);
 			match( Keywords.SEMI_COLON);
 		}
 		else if( lookahead.getType() == Keywords.PROCEDURE){
 			match( Keywords.PROCEDURE);
 			if( lookahead.getType() == Keywords.ID){
-				sub = new SubProgramNode( lookahead.getLexeme());
+				sub = new SubProgramNode( lookahead.getLexeme(), Keywords.PROCEDURE);
 				match( Keywords.ID);
 			}
 			symbolTable.add(sub.getName(), Kinds.PROCEDURE, null, null, null);
@@ -294,7 +305,7 @@ public class MyParser {
 		ArrayList<VariableNode> argsList = new ArrayList<VariableNode>();
 		if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
 			match( Keywords.LEFT_PARENTHESES);
-			argsList.addAll( parameter_list());
+			argsList.addAll( parameter_list( true));
 			match( Keywords.RIGHT_PARENTHESES);
 		}
 		else{
@@ -303,13 +314,13 @@ public class MyParser {
 		return argsList;
 	}
 
-	protected ArrayList<VariableNode> parameter_list() {
+	protected ArrayList<VariableNode> parameter_list( boolean isArguement) {
 		ArrayList<String> identifierList = identifier_list();
 		match( Keywords.COLON);
-		ArrayList<VariableNode> argsList = type( identifierList);
+		ArrayList<VariableNode> argsList = type( identifierList, isArguement);
 		if( lookahead.getType() == Keywords.SEMI_COLON){
 			match( Keywords.SEMI_COLON);
-			argsList.addAll( parameter_list());
+			argsList.addAll( parameter_list( isArguement));
 		}
 		return argsList;
 	}
@@ -366,6 +377,7 @@ public class MyParser {
 					node.setExpression( analyzer.codeFolding());
 					
 					if( node.getLvalue().getType() != node.getExpression().getType()){
+						System.out.println(node.getLvalue().getType() + " " + node.getExpression().getType());
 						error( "type mismatch");
 					}
 					
@@ -565,7 +577,7 @@ public class MyParser {
 					return variable();
 				}					
 				else if( symbolTable.isFunctionName( identifier)){
-					FunctionNode fnode = new FunctionNode( identifier, Keywords.FUNCTION);
+					FunctionNode fnode = new FunctionNode( identifier, symbolTable.getType(identifier));
 					match( Keywords.ID);
 					match( Keywords.LEFT_PARENTHESES);
 					fnode.setExpNode( expression_list());

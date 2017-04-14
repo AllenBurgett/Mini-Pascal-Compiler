@@ -17,6 +17,10 @@ public class VariableSymbol extends Symbol {
 		return this.type;
 	}
 	
+	public String getDataIdentifier(){
+		return dataIdentifier;
+	}
+	
 	@Override
 	public String toString(){
 		return super.identifier + " VARIABLE " + this.type.toString();

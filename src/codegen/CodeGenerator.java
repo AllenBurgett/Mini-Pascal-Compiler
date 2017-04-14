@@ -3,6 +3,8 @@ package codegen;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import parser.ArgumentSymbol;
+import parser.FunctionSymbol;
 import parser.ProcedureSymbol;
 import parser.Symbol;
 import parser.SymbolTable;
@@ -12,6 +14,7 @@ import syntaxtree.AssignmentStatementNode;
 import syntaxtree.CompoundStatementNode;
 import syntaxtree.DeclarationsNode;
 import syntaxtree.ExpressionNode;
+import syntaxtree.FunctionNode;
 import syntaxtree.IfStatementNode;
 import syntaxtree.OperationNode;
 import syntaxtree.ProcedureStatementNode;
@@ -47,7 +50,7 @@ public class CodeGenerator {
 		
 		output.add("\n.text\n");
 		output.add("write:\naddi $sp, $sp, -4\nsw $ra, 0($sp)\nli $v0, 1\nsyscall\n"
-				+ "li $v0, 4\nla $a0, newLine\nsyscall\nlw $ra, 0($sp)\naddi $sp, $sp, 4\njr $ra\n");
+				+ "li $v0, 4\nla $a0, __newLine\nsyscall\nlw $ra, 0($sp)\naddi $sp, $sp, 4\njr $ra\n");
 		
 		for(SubProgramNode sub : root.getFunctions().getProcs()){
 			isSuccess = subProgramGenerator( sub);
@@ -66,28 +69,46 @@ public class CodeGenerator {
 	
 	private boolean subProgramGenerator( SubProgramNode subProgram){
 		boolean isSuccess = true;
+		String returnLocation = null;
 		String subId = subProgram.getName();
+		ProcedureSymbol progSymbol = ((ProcedureSymbol)globalTable.getSymbol( subId));		
+		HashMap<String, Symbol> localTable = progSymbol.getLocalSymbolTable();
+		globalTable.pushTable(subId, localTable);
 		output.add(subId + ":\n");
 		
-		HashMap<String, Symbol> localTable = ((ProcedureSymbol) globalTable.getSymbol(subId)).getLocalSymbolTable();
-		int varCount = 0;
-		int numOfArgs = subProgram.getNumOfArgs();
-		for(Symbol symbol : localTable.values()){ if(symbol instanceof VariableSymbol){ varCount++;}}
-		output.add("addi $fp, $sp, " + (varCount * -4) + "\n");
-		for(int i = 0; i < numOfArgs; i++){
-			output.add("sw $a" + i + ", " + (i * 4) + "($fp)\n");
-		}
-		for(int i = numOfArgs; i < varCount; i++){
-			output.add("li $t0, 0\nsw $t0, " + (i * 4) + "($fp)\n");
+		for(Symbol symbol : globalTable.getSymbols()){
+			System.out.println(symbol.toString());
 		}
 		
-		output.add("sw $ra, " + numOfArgs + "($sp)\n");
+		int varCount = 0;
+		int numOfArgs = subProgram.getNumOfArgs();
+		for(Symbol symbol : globalTable.getSymbols()){ if(symbol instanceof VariableSymbol) varCount++;}
+		output.add("addi $fp, $sp, " + (varCount * -4) + "\n");
+		for(Symbol symbol : globalTable.getSymbols()){
+			if( symbol instanceof ArgumentSymbol){
+				int argNum = ((ArgumentSymbol)symbol).getArgNum();
+				String dataString = ((ArgumentSymbol)symbol).getDataIdentifier();
+				output.add("sw $a" + argNum + ", " + dataString + "\n");
+			}else if( symbol instanceof VariableSymbol){
+				String dataString = ((VariableSymbol) symbol).getDataIdentifier();
+				output.add("li $t0, 0\nsw $t0, " + dataString + "\n");
+				if( symbol.getIdentifier().equals(subId)){
+					returnLocation = dataString;
+				}
+			}
+		}
+		
+		output.add("addi $sp, $fp, -4\nsw $ra, 0($sp)\n");
 		
 		for(StatementNode statement : subProgram.getMain().getStatements()){
 			isSuccess = statementGenerator( statement);
 		}
 		
-		output.add("lw $ra, " + numOfArgs + "($sp)\naddi $sp, $sp, " + (numOfArgs + varCount + 1) + "\njr $ra\n");
+		if( subProgram.getSubType() == Keywords.FUNCTION){
+			output.add("lw $t0, " + returnLocation + "\nadd $v0, $t0, $zero\n");
+		}
+		
+		output.add("lw $ra, 0($sp)\naddi $sp, $sp, " + ((varCount + 1) * 4) + "\njr $ra\n");
 		
 		return isSuccess;
 	}
@@ -115,14 +136,15 @@ public class CodeGenerator {
 	private boolean assignmentGenerator( AssignmentStatementNode assignment){
 		boolean isSuccess = true;
 		int t_val = 0;
+		String varName = assignment.getLvalue().getName();
+		String dataString = ((VariableSymbol) globalTable.getSymbol( varName)).getDataIdentifier();
 		
-		if( assignment.getExpression() instanceof ValueNode){
-			String varName = assignment.getLvalue().getName();
+		if( assignment.getExpression() instanceof ValueNode){			
 			String val = ((ValueNode)assignment.getExpression()).getAttribute();
-			output.add("li $t0, " + val + "\nsw $t0, " + varName + "\n"); 
+			output.add("li $t0, " + val + "\nsw $t0, " + dataString + "\n"); 
 		}else{
 			expressionGenerator( assignment.getExpression(), t_val);
-			output.add("sw $t" + t_val + ", " + assignment.getLvalue().getName() + "\n");
+			output.add("sw $t" + t_val + ", " + dataString + "\n");
 		}	
 		
 		return isSuccess;
@@ -134,8 +156,11 @@ public class CodeGenerator {
 			t_val = operationGenerator( (OperationNode) expression, t_val);
 		}
 		
-		if( expression instanceof VariableNode){
-			String varName = ((VariableNode) expression).getName();
+		if( expression instanceof FunctionNode){
+			t_val = functionCallGeneratior( (FunctionNode) expression);
+		}else if( expression instanceof VariableNode){
+			String varId = ((VariableNode) expression).getName();
+			String varName = ((VariableSymbol) globalTable.getSymbol( varId)).getDataIdentifier();
 			output.add("lw $t" + t_val + ", " + varName + "\n");
 		}
 		
@@ -217,15 +242,31 @@ public class CodeGenerator {
 	private boolean procedureCallGenerator( ProcedureStatementNode procedure){
 		boolean isSuccess = true;
 		int t_val = 0;
+		int a_val = 0;
 		
 		for( ExpressionNode expression : procedure.getExpressions()){
 			t_val = expressionGenerator( expression, t_val);
-			output.add("add $a" + t_val + ", $zero, $t" + t_val + "\n");
+			output.add("add $a" + a_val + ", $zero, $t" + t_val + "\n");
+			a_val++;
 		}
 		
 		output.add("jal " + procedure.getLvalue().getName() + "\n");
 		
 		return isSuccess;
+	}
+	
+	private int functionCallGeneratior( FunctionNode function){
+		int t_val = 0;
+		int a_val = 0;
+		
+		for( ExpressionNode expression : function.getExpNode()){
+			t_val = expressionGenerator( expression, t_val);
+			output.add("add $a" + a_val + ", $zero, $t" + t_val + "\n");
+			a_val++;
+		}
+		
+		output.add("jal " + function.getName() + "\nadd $t" + t_val + ", $v0, $zero\n");
+		return t_val;
 	}
 	
 	private boolean whileGenerator( WhileStatementNode statement){

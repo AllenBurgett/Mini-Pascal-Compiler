@@ -1,11 +1,11 @@
-program foop;
+program foof;
 var fee, fi, fo, fum: integer;
-procedure pTest( ha, hee, hoo : integer);
+function pTest( ha, hee, hoo : integer) : integer;
 var gee, gi : integer;
 begin
   gee := 10;
   gi := 1;
-  fo := (ha + gee - hoo) * (hee - gi)
+  pTest := (ha + gee - hoo) * (hee - gi)
 end
 begin
   fee := 4;
@@ -17,7 +17,7 @@ begin
   ;
   if fo < 13
     then
-      pTest(10, 11, 10)
+      fo := pTest(10, 11, 10)
     else
       fo := 26
   ;
