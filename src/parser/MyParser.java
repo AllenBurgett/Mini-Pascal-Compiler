@@ -56,6 +56,7 @@ public class MyParser {
     public DeclarationsNode decs = new DeclarationsNode();
     
     private boolean noError = true;
+    private int elseCount = 0;
     
     ///////////////////////////////
     //       Constructors
@@ -140,7 +141,7 @@ public class MyParser {
 	    	
 	    	ArrayList<VariableNode> vars = type(identifierList);
 	    	for(VariableNode var : vars){ decs.addVariable( var);}
-	    		    	
+	    	
 	    	match( Keywords.SEMI_COLON);
 	    	declarations();
     	}
@@ -260,16 +261,18 @@ public class MyParser {
 
 	protected SubProgramNode subprogram_head() {
 		SubProgramNode sub = null;
+		ArrayList<VariableNode> args = null;
 		
 		if( lookahead.getType() == Keywords.FUNCTION){
 			match( Keywords.FUNCTION);
 			if( lookahead.getType() == Keywords.ID){
 				sub = new SubProgramNode( lookahead.getLexeme());
 				match( Keywords.ID);
-			}			
-			arguments();
-			match( Keywords.COLON);
+			}
 			symbolTable.add(sub.getName(), Kinds.FUNCTION, standard_type(), null, null);
+			args = arguments();
+			sub.setArguments( args);
+			match( Keywords.COLON);
 			match( Keywords.SEMI_COLON);
 		}
 		else if( lookahead.getType() == Keywords.PROCEDURE){
@@ -278,35 +281,37 @@ public class MyParser {
 				sub = new SubProgramNode( lookahead.getLexeme());
 				match( Keywords.ID);
 			}
-			arguments();
 			symbolTable.add(sub.getName(), Kinds.PROCEDURE, null, null, null);
+			args = arguments();
+			sub.setArguments( args);
 			match( Keywords.SEMI_COLON);
 		}
 		
 		return sub;
 	}
 
-	protected void arguments() {
+	protected ArrayList<VariableNode> arguments() {
+		ArrayList<VariableNode> argsList = new ArrayList<VariableNode>();
 		if( lookahead.getType() == Keywords.LEFT_PARENTHESES){
 			match( Keywords.LEFT_PARENTHESES);
-			parameter_list();
+			argsList.addAll( parameter_list());
 			match( Keywords.RIGHT_PARENTHESES);
 		}
 		else{
 			//lambda case
 		}
-		
+		return argsList;
 	}
 
-	protected void parameter_list() {
+	protected ArrayList<VariableNode> parameter_list() {
 		ArrayList<String> identifierList = identifier_list();
 		match( Keywords.COLON);
-		type( identifierList);
+		ArrayList<VariableNode> argsList = type( identifierList);
 		if( lookahead.getType() == Keywords.SEMI_COLON){
 			match( Keywords.SEMI_COLON);
-			parameter_list();
+			argsList.addAll( parameter_list());
 		}
-		
+		return argsList;
 	}
 
 	protected CompoundStatementNode compound_statement() {
@@ -374,7 +379,8 @@ public class MyParser {
 				}
 				break;
 			case IF:
-				IfStatementNode ifnode = new IfStatementNode();
+				IfStatementNode ifnode = new IfStatementNode( elseCount);
+				elseCount++;
 				match( Keywords.IF);
 				analyzer = new SemanticAnalyzer( expression());
 				ifnode.setTest( analyzer.codeFolding());
@@ -387,13 +393,15 @@ public class MyParser {
 				return ifnode;
 				
 			case WHILE:
-				WhileStatementNode whilenode = new WhileStatementNode();
+				WhileStatementNode whilenode = new WhileStatementNode( elseCount);
+				elseCount++;
 				match( Keywords.WHILE);
 				analyzer = new SemanticAnalyzer( expression());
 				whilenode.setTest( analyzer.codeFolding());
 				match( Keywords.DO);
 				whilenode.setThenStatement( statement());
 				return whilenode;
+				
 			case BEGIN:
 				return compound_statement();
 			default:
@@ -440,10 +448,9 @@ public class MyParser {
 
 	protected ArrayList<ExpressionNode> expression_list() {
 		ArrayList<ExpressionNode> expList = new ArrayList<ExpressionNode>();
-		System.out.println("hit");
 		expList.add( expression());
-		if( lookahead.getType() == Keywords.SEMI_COLON){
-			match( Keywords.SEMI_COLON);
+		if( lookahead.getType() == Keywords.COMMA){
+			match( Keywords.COMMA);
 			expList.addAll( expression_list());
 		}
 		
@@ -704,9 +711,15 @@ public class MyParser {
      */
     protected boolean isMulop( Token token) {
         boolean answer = false;
-        if( token.getType() == Keywords.TIMES || 
-                token.getType() == Keywords.DIVIDE ) {
-            answer = true;
+        switch( token.getType()){
+        	case TIMES:
+        	case DIVIDE:
+        	case AND:
+        	case MOD:
+        	case DIV:
+        		answer = true;
+        	default:
+        		break;
         }
         return answer;
     }

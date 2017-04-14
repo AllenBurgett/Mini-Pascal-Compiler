@@ -5,10 +5,12 @@ import scanner.Keywords;
 public class VariableSymbol extends Symbol {
 	
 	protected Keywords type;
+	protected String dataIdentifier;
 	
-	public VariableSymbol( String identifier, Keywords type){
+	public VariableSymbol( String identifier, String dataIdentifier, Keywords type){
 		super( identifier);
 		this.type = type;
+		this.dataIdentifier = dataIdentifier;
 	}
 	
 	public Keywords getType(){

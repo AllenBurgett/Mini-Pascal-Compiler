@@ -7,8 +7,8 @@ public class ArraySymbol extends VariableSymbol {
 	private Integer arrayStart;
 	private Integer arrayEnd;
 	
-	public ArraySymbol( String identifier, Keywords type, Integer start, Integer end){
-		super( identifier, type);
+	public ArraySymbol( String identifier, String dataIdentifier, Keywords type, Integer start, Integer end){
+		super( identifier, dataIdentifier, type);
 		this.arrayStart = start;
 		this.arrayEnd = end;
 	}

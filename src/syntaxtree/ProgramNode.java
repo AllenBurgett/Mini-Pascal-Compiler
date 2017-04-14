@@ -16,6 +16,10 @@ public class ProgramNode extends SyntaxTreeNode {
     public ProgramNode( String aName) {
         this.name = aName;
     }
+    
+    public String getName(){
+    	return name;
+    }
 
     public DeclarationsNode getVariables() {
         return variables;

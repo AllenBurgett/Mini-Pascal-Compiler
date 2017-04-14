@@ -11,33 +11,46 @@ public class SymbolTable {
 	private HashMap<String, Symbol> identifierTable = new HashMap<String, Symbol>();
 	private Stack<StackEntry> symbolTableStack = new Stack<StackEntry>();
 	private int stackSize = 0;
+	private int varCount = 0;
 	
 	public SymbolTable(){
-		this.add("write", Kinds.FUNCTION, Keywords.VOID, null, null);
-		this.add("read", Kinds.FUNCTION, Keywords.VOID, null, null);
 		this.pushTable( "Program", identifierTable);
+		this.add("write", Kinds.PROCEDURE, null, null, null);
+		this.add("read", Kinds.PROCEDURE, null, null, null);
 	}
 	
 	public boolean add( String identifier, Kinds kind, Keywords type, Integer start, Integer end){
 		boolean answer = false;
 		boolean error = false;
-		if(! identifierTable.containsKey(identifier)){
+		HashMap<String, Symbol> currentTable = symbolTableStack.peek().getTable();
+		if(! currentTable.containsKey(identifier)){
 			switch( kind){
 				case VARIABLE:
-					identifierTable.put(identifier, new VariableSymbol( identifier, type));
+					if( stackSize > 1){
+						String dataId = "" + (4 * varCount) + "($fp)";
+						currentTable.put(identifier, new VariableSymbol( identifier, dataId, type));
+					}else{
+						currentTable.put(identifier, new VariableSymbol( identifier, identifier, type));
+					}
+					varCount++;
 					break;
 				case ARRAY:
-					identifierTable.put(identifier, new ArraySymbol( identifier, type, start, end));
+					if( stackSize > 1){
+						String dataId = "" + (4 * varCount) + "($fp)";
+						currentTable.put(identifier, new VariableSymbol( identifier, dataId, type));
+					}else{
+						currentTable.put(identifier, new ArraySymbol( identifier, identifier, type, start, end));
+					}
 					break;
 				case PROCEDURE:
 					ProcedureSymbol procedure = new ProcedureSymbol( identifier);
-					this.pushTable( identifier, procedure.getLocalSymbolTable());
-					identifierTable.put(identifier, procedure);					
+					currentTable.put(identifier, procedure);
+					this.pushTable( identifier, procedure.getLocalSymbolTable());					
 					break;
 				case FUNCTION:
 					FunctionSymbol function = new FunctionSymbol( identifier, type);
+					currentTable.put(identifier, function);
 					this.pushTable( identifier, function.getLocalSymbolTable());
-					identifierTable.put(identifier, function);
 					break;
 				default:
 					error = true;
@@ -54,6 +67,7 @@ public class SymbolTable {
 		StackEntry entry = new StackEntry( id, table);
 		symbolTableStack.push( entry);
 		this.stackSize++;
+		this.varCount = 0;
 		return this.stackSize;
 	}
 	
@@ -123,18 +137,26 @@ public class SymbolTable {
 	}
 	
 	public Keywords getType( String id){
-		Symbol symbol = identifierTable.get( id);
-		if( symbol instanceof VariableSymbol){
-			return ((VariableSymbol) symbol).getType(); 
-		}else if( symbol instanceof ArraySymbol){
-			return ((ArraySymbol) symbol).getType();
-		}else if( symbol instanceof FunctionSymbol){
-			return ((FunctionSymbol) symbol).getType();
+		for( int i = stackSize - 1; i >= 0; i--){
+			if( symbolTableStack.elementAt(i).getTable().containsKey(id)){
+				Symbol symbol = symbolTableStack.elementAt(i).getTable().get( id);
+				if( symbol instanceof VariableSymbol){
+					return ((VariableSymbol) symbol).getType(); 
+				}else if( symbol instanceof ArraySymbol){
+					return ((ArraySymbol) symbol).getType();
+				}else if( symbol instanceof FunctionSymbol){
+					return ((FunctionSymbol) symbol).getType();
+				}
+			}
 		}
 		return null;
 	}
 	
 	public Collection<Symbol> getSymbols(){
 		return identifierTable.values();
+	}
+	
+	public Symbol getSymbol( String id){
+		return identifierTable.get(id);
 	}
 }

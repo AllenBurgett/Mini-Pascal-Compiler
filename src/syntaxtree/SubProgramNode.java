@@ -1,4 +1,7 @@
 package syntaxtree;
+
+import java.util.ArrayList;
+
 /**
  * 
  * @author Allen Burgett
@@ -6,12 +9,27 @@ package syntaxtree;
  */
 public class SubProgramNode extends SyntaxTreeNode{
 	private String name;
+	private ArrayList<VariableNode> arguments;
+	private int numOfArgs;
     private DeclarationsNode variables;
     private SubProgramDeclarationsNode functions;
     private CompoundStatementNode main;
     
     public SubProgramNode( String aName) {
         this.name = aName;
+    }
+    
+    public void setArguments( ArrayList<VariableNode> args){
+    	this.arguments = args;
+    	this.numOfArgs = args.size();
+    }
+    
+    public ArrayList<VariableNode> getArguments(){
+    	return arguments;
+    }
+    
+    public int getNumOfArgs(){
+    	return numOfArgs;
     }
     
     public String getName(){

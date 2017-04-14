@@ -2,7 +2,7 @@
 { An example program for a syntax tree.}
 { Exchange rates as of 9 March 2017.}
 
-program sample;
+program money;
 var dollars, yen, bitcoins: integer;
 
 begin
