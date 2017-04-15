@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import scanner.Keywords;
 
 /**
- * 
+ * Represents a sub program in Mini-Pascal. Similar in 
+ * structure to a ProgramNode, but some sub programs can
+ * have return types.
  * @author Allen Burgett
  *
  */
@@ -19,6 +21,11 @@ public class SubProgramNode extends SyntaxTreeNode{
     private Keywords subType;
     private Keywords returnType = null;
     
+    /**
+     * Initialized a SubProgramNode.
+     * @param aName, name of the sub program.
+     * @param subType, type of sub program: Procedure or Function..
+     */
     public SubProgramNode( String aName, Keywords subType) {
         this.name = aName;
         this.subType = subType;

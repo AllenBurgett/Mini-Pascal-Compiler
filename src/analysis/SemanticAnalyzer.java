@@ -25,7 +25,8 @@ public class SemanticAnalyzer {
     
     /**
      * Performs code folding on the expression tree.
-     * For demonstration purposes, we only fold addition nodes.
+     * Code folding folds any value nodes that can be 
+     * combined into a singular expression.
      * @return The root node of the mutated tree.
      */
     public ExpressionNode codeFolding() {
@@ -40,18 +41,20 @@ public class SemanticAnalyzer {
     
     /**
      * Folds code for the given node.
-     * We only fold if both children are value nodes, and the node itself
-     * is a PLUS node.
+     * We only fold if both children are value nodes.
      * @param node The node to check for possible efficiency improvements.
      * @return The folded node or the original node if nothing 
      */
     private ExpressionNode codeFolding( OperationNode node) {
+    	//case left side of the tree could require additional folding.
     	if( node.getLeft() instanceof OperationNode) {
             node.setLeft( codeFolding( (OperationNode)node.getLeft()));
         }
+    	//case right side of the tree could require additional folding.
         if( node.getRight() instanceof OperationNode) {
             node.setRight( codeFolding( (OperationNode)node.getRight()));
         }
+        //case both sides are values.
         if( node.getLeft() instanceof ValueNode &&
                 node.getRight() instanceof ValueNode){
     		ValueNode leftNode = ((ValueNode)node.getLeft());
@@ -59,6 +62,7 @@ public class SemanticAnalyzer {
     		double leftValue = Double.parseDouble(leftNode.getAttribute());
     		double rightValue = Double.parseDouble(rightNode.getAttribute());
     		double val = 0.0;
+    		//evaluate the expression
         	switch( node.getOperation()){
         		case PLUS:
         			val = leftValue + rightValue;
@@ -97,12 +101,15 @@ public class SemanticAnalyzer {
         			return node;
         	}
         	
+        	//build a new ValueNode, based on the result of the folding.
         	ValueNode vn = null;
         	
+        	//case both sides are integers.
         	if( leftNode.getType() == Keywords.INTEGER && rightNode.getType() == Keywords.INTEGER){
         		int int_val = (int) val;
         		vn = new ValueNode("" + int_val, Keywords.INTEGER);
-        		vn.setType(Keywords.INTEGER);        		
+        		vn.setType(Keywords.INTEGER);     
+        	//case one side is a real.
         	}else{
         		vn = new ValueNode("" + val, Keywords.REAL);
         		vn.setType(Keywords.REAL);        		
@@ -110,6 +117,7 @@ public class SemanticAnalyzer {
         	
         	return vn;
         }
+        //set the type of the expression
         else {
         	if(node.getLeft().getType() == Keywords.REAL || node.getRight().getType() == Keywords.REAL){
         		node.setType( Keywords.REAL);

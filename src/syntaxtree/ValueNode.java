@@ -19,6 +19,7 @@ public class ValueNode extends ExpressionNode {
     /**
      * Creates a ValueNode with the given attribute.
      * @param attr The attribute for this value node.
+     * @param type, Integer or Real.
      */
     public ValueNode( String attr, Keywords type) {
         this.attribute = attr;

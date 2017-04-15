@@ -11,6 +11,7 @@ public class ProcedureStatementNode extends StatementNode {
     private VariableNode lvalue;
     private ArrayList<ExpressionNode> expressions = new ArrayList<ExpressionNode>();
 
+    //setters
     public void setLvalue(VariableNode input){
     	this.lvalue = input;
     }
@@ -27,6 +28,7 @@ public class ProcedureStatementNode extends StatementNode {
     	expressions.addAll(input);
     }
 
+    //getters
     public VariableNode getLvalue(){
     	return this.lvalue;
     }

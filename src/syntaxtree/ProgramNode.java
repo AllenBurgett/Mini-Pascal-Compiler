@@ -2,7 +2,7 @@
 package syntaxtree;
 
 /**
- * Represents a Pascal Program
+ * Represents a Mini-Pascal Program
  * @author Allen Burgett, based on code by Erik Steinmetz
  */
 public class ProgramNode extends SyntaxTreeNode {
@@ -13,6 +13,10 @@ public class ProgramNode extends SyntaxTreeNode {
     private SubProgramDeclarationsNode functions;
     private CompoundStatementNode main;
     
+    /**
+     * Initialized a ProgramNode with the name of the Program.
+     * @param aName, name of the program.
+     */
     public ProgramNode( String aName) {
         this.name = aName;
     }

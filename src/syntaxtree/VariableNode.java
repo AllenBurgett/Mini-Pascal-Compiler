@@ -15,6 +15,7 @@ public class VariableNode extends ExpressionNode {
     /**
      * Creates a ValueNode with the given attribute.
      * @param attr The attribute for this value node.
+     * @param type, Integer or Real.
      */
     public VariableNode( String attr, Keywords type) {
         this.name = attr;

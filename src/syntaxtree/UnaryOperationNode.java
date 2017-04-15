@@ -3,6 +3,7 @@ package syntaxtree;
 import scanner.Keywords;
 
 /**
+ * Represents an expression with a Unary Operator applied to it.
  * Created by Allen Burgett
  */
 public class UnaryOperationNode extends ExpressionNode {

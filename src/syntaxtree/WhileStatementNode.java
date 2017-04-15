@@ -1,8 +1,11 @@
 package syntaxtree;
 
 /**
- * Represents a while statement in Pascal
+ * Represents a while statement in Mini-Pascal
  * Contains a test and statements to do while the condition is true.
+ * Similar to the IfStatementNode in structure, but without a false
+ * statement. It contains an else count integer for labeling during 
+ * code generation.
  * @author Allen Burgett
  *
  */

@@ -1,1 +1,6 @@
+analysis
+codegen
+compiler
+parser
 scanner
+syntaxtree
