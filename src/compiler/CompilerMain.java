@@ -48,7 +48,32 @@ public class CompilerMain {
 			//case there were no problems with the code compilation.
 			if( successfulCompile){
 				//create buffer to write the MIPS code to
-				PrintWriter writer = new PrintWriter( parser.prog.getName() + ".asm");
+				PrintWriter writer = null;
+				if( args.length > 1){
+					File outDir = new File( args[1]);
+
+					// if the directory does not exist, create it
+					if (!outDir.exists()) {
+					    System.out.println("Creating directory: " + outDir.getName());
+					    boolean result = false;
+
+					    try{
+					        outDir.mkdir();
+					        result = true;
+					    } 
+					    catch(SecurityException se){
+					    	System.out.println("You do not have permission to create this directory.");
+					    }        
+					    if(result) {    
+					        System.out.println("Directory created");  
+					    }
+					}
+					
+					writer = new PrintWriter( args[1] + parser.prog.getName() + ".asm");
+				}else{
+					new PrintWriter( parser.prog.getName() + ".asm");
+				}
+				
 				ArrayList<String> output = codeGen.getOutput();
 				
 				//write the output to the buffer.

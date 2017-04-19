@@ -1,0 +1,25 @@
+Our small Pascal keywords and symbols, 
+the definitive list.
+
+    KEYWORDS             SYMBOLS
+    ________             _______
+ 1) and                  ;
+ 2) array                ,
+ 3) begin                .
+ 4) div                  :
+ 5) do                   [
+ 6) else                 ]
+ 7) end                  (
+ 8) function             )
+ 9) if                   +
+10) integer              -
+11) mod                  =
+12) not                  <>
+13) of                   <
+14) or                   <=
+15) procedure            >
+16) program              >=
+17) real                 *
+18) then                 /
+19) var                  :=
+20) while
