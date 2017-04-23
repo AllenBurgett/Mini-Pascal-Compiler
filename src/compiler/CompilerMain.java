@@ -71,7 +71,7 @@ public class CompilerMain {
 					
 					writer = new PrintWriter( args[1] + parser.prog.getName() + ".asm");
 				}else{
-					new PrintWriter( parser.prog.getName() + ".asm");
+					writer = new PrintWriter( parser.prog.getName() + ".asm");
 				}
 				
 				ArrayList<String> output = codeGen.getOutput();
